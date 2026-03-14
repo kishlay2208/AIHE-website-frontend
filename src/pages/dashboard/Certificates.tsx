@@ -6,7 +6,11 @@ import { useCertificates } from "@/services/queries";
 
 export default function Certificates() {
   const { data: certificatesData, isLoading } = useCertificates();
-  const certificates = certificatesData?.data || [];
+  const certificates = certificatesData?.data ?? [];
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const previewUrl = (id: number, download?: boolean) =>
+    `${apiBase}/students/certificates/${id}/preview${download ? "?download=1" : ""}`;
   return (
     <div className="space-y-6">
       <div>
@@ -33,7 +37,7 @@ export default function Certificates() {
                     <h3 className="text-lg font-bold text-foreground">Certificate of Completion</h3>
                     <p className="text-primary font-semibold mt-2">{cert.courseTitle}</p>
                     <p className="text-sm text-muted-foreground mt-4">
-                      Certificate No: {cert.certificateNumber}
+                      Verification ID: {cert.certificateNumber ?? cert.certificate_number ?? cert.id}
                     </p>
                   </div>
                   {/* Watermark */}
@@ -64,17 +68,68 @@ export default function Certificates() {
 
               {cert.status === "available" && (
                 <>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Issued: {cert.issueDate}
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Issued: {cert.issueDate ?? cert.issue_date ?? ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Verification ID: {cert.certificateNumber ?? cert.certificate_number ?? cert.id}
                   </p>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-2">
-                      <Eye className="h-4 w-4" />
-                      Preview
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 gap-2"
+                      asChild
+                    >
+                      <a
+                        href={previewUrl(cert.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (token) {
+                            e.preventDefault();
+                            const url = previewUrl(cert.id);
+                            const w = window.open("", "_blank");
+                            if (w) {
+                              fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                                .then((r) => r.text())
+                                .then((html) => {
+                                  w.document.write(html);
+                                  w.document.close();
+                                });
+                            }
+                          }
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </a>
                     </Button>
-                    <Button size="sm" className="flex-1 gap-2">
-                      <Download className="h-4 w-4" />
-                      Download
+                    <Button size="sm" className="flex-1 gap-2" asChild>
+                      <a
+                        href={previewUrl(cert.id, true)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (token) {
+                            e.preventDefault();
+                            fetch(previewUrl(cert.id, true), { headers: { Authorization: `Bearer ${token}` } })
+                              .then((r) => r.text())
+                              .then((html) => {
+                                const blob = new Blob([html], { type: "text/html" });
+                                const a = document.createElement("a");
+                                a.href = URL.createObjectURL(blob);
+                                a.download = `certificate-${cert.id}.html`;
+                                a.click();
+                                URL.revokeObjectURL(a.href);
+                              })
+                              .catch(() => {});
+                          }
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </a>
                     </Button>
                   </div>
                 </>

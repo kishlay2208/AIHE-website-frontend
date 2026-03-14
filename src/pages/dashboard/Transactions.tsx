@@ -1,6 +1,7 @@
-import { CreditCard, CheckCircle, Clock, XCircle } from "lucide-react";
+import { CreditCard, CheckCircle, Clock, XCircle, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,7 +14,22 @@ import { useTransactions } from "@/services/queries";
 
 export default function Transactions() {
   const { data: transactionsData, isLoading } = useTransactions();
-  const transactions = transactionsData?.data || [];
+  const transactions = transactionsData?.data ?? [];
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const openReceipt = (transactionId: number) => {
+    if (!token) return;
+    const url = `${apiBase}/students/transactions/${transactionId}/receipt`;
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.text())
+      .then((html) => {
+        const w = window.open("", "_blank");
+        if (w) {
+          w.document.write(html);
+          w.document.close();
+        }
+      });
+  };
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -89,23 +105,35 @@ export default function Transactions() {
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-right">Receipt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="text-muted-foreground">
-                    {transaction.date}
+                    {transaction.date ?? transaction.transaction_date?.slice?.(0, 10)}
                   </TableCell>
                   <TableCell className="font-medium">{transaction.description}</TableCell>
                   <TableCell className="text-right font-semibold">
-                    ₹{transaction.amount.toLocaleString()}
+                    ₹{Number(transaction.amount ?? 0).toLocaleString()}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant={getStatusVariant(transaction.status)} className="gap-1">
                       {getStatusIcon(transaction.status)}
                       {transaction.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => openReceipt(transaction.id)}
+                    >
+                      <FileText className="h-4 w-4" />
+                      Generate Receipt
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

@@ -51,13 +51,23 @@ export interface EnrolledCourse {
 }
 
 export interface Recording {
-  id: string;
-  sessionNumber: number;
+  id: number;
+  course_id?: number;
+  session_number: number;
+  session_date: string | null;
+  topic: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  ppt_url: string | null;
+}
+
+export interface CourseMaterial {
+  id: number;
+  course_id: number;
   title: string;
-  date: string;
-  duration: string;
-  videoUrl: string;
-  materials?: string[];
+  material_type: string;
+  url: string | null;
+  description: string | null;
 }
 
 export interface Assessment {

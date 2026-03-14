@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +24,23 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [googleReady, setGoogleReady] = useState(false);
   const { login, register, googleLogin } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check if Google OAuth script is loaded
+  useEffect(() => {
+    const checkGoogle = () => {
+      if (typeof window !== "undefined" && (window as any).google) {
+        setGoogleReady(true);
+      } else {
+        // Retry after a short delay
+        setTimeout(checkGoogle, 100);
+      }
+    };
+    checkGoogle();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +53,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         title: "Login successful",
         description: "Welcome back!",
       });
+      // Navigate immediately after successful login
+      // Use setTimeout to allow React state to propagate
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -66,6 +87,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         title: "Account created",
         description: "Welcome! Your account has been created successfully.",
       });
+      // Navigate immediately after successful signup
+      // Use setTimeout to allow React state to propagate
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Signup failed",
@@ -76,9 +102,38 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   };
 
   const handleGoogleLogin = () => {
-    if (typeof window !== "undefined" && (window as any).google) {
+    const clientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID;
+    
+    if (!clientId) {
+      toast({
+        title: "Google OAuth not configured",
+        description: "VITE_GOOGLE_CLIENT_ID is missing in .env file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!clientId.includes(".apps.googleusercontent.com")) {
+      toast({
+        title: "Invalid Google Client ID",
+        description: "Client ID must end with .apps.googleusercontent.com. Check your .env file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!googleReady || typeof window === "undefined" || !(window as any).google) {
+      toast({
+        title: "Google OAuth not ready",
+        description: "Google OAuth script is still loading. Please wait a moment and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
       (window as any).google.accounts.oauth2.initTokenClient({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
+        client_id: clientId,
         scope: "email profile",
         callback: async (response: any) => {
           if (response.access_token) {
@@ -89,6 +144,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 title: "Login successful",
                 description: "Welcome!",
               });
+              // Navigate immediately after successful Google login
+              // Use setTimeout to allow React state to propagate
+              setTimeout(() => {
+                navigate("/dashboard", { replace: true });
+              }, 100);
             } catch (error: any) {
               toast({
                 title: "Google login failed",
@@ -99,10 +159,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           }
         },
       }).requestAccessToken();
-    } else {
+    } catch (error: any) {
       toast({
-        title: "Google OAuth not available",
-        description: "Please check your Google Client ID configuration",
+        title: "Google OAuth error",
+        description: error?.message || "Failed to initialize Google OAuth",
         variant: "destructive",
       });
     }

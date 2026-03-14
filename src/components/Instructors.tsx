@@ -45,8 +45,8 @@ const Instructors = () => {
             No instructors available at the moment.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-            {instructors.map((instructor, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          {instructors.map((instructor, index) => (
             <motion.div
               key={instructor.id}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -79,8 +79,8 @@ const Instructors = () => {
               <p className="text-muted-foreground text-xs">{instructor.title}</p>
               <p className="text-primary text-xs mt-2 font-medium">Click for details</p>
             </motion.div>
-            ))}
-          </div>
+          ))}
+        </div>
         )}
       </div>
 

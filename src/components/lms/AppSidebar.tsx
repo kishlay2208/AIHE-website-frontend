@@ -10,9 +10,9 @@ import {
   GraduationCap,
   Users,
   FilePlus,
+  Video,
   LogOut,
   ChevronDown,
-  X,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
@@ -29,6 +29,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import iskconLogo from "@/assets/iskcon-logo.png";
 import aiheLogo from "@/assets/aihe-logo.png";
 import { cn } from "@/lib/utils";
+
+const RAIL_WIDTH = 64;
+const EXPANDED_WIDTH = 260;
 
 interface NavItem {
   title: string;
@@ -54,15 +57,19 @@ const adminItems: NavItem[] = [
 
 const superAdminItems: NavItem[] = [
   { title: "User Management", url: "/dashboard/users", icon: Users, roles: ["superadmin"] },
+  { title: "Instructor Manager", url: "/dashboard/instructors", icon: GraduationCap, roles: ["superadmin"] },
   { title: "Course Creator", url: "/dashboard/course-creator", icon: FilePlus, roles: ["superadmin"] },
+  { title: "Media Manager", url: "/dashboard/media-manager", icon: Video, roles: ["superadmin"] },
 ];
 
 interface AppSidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  expanded: boolean;
+  onExpand: () => void;
+  onCollapse: () => void;
+  onToggle: () => void;
 }
 
-export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
+export function AppSidebar({ expanded, onExpand, onCollapse }: AppSidebarProps) {
   const { user, role, logout, setRole } = useAuth();
   const location = useLocation();
 
@@ -84,42 +91,129 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   };
 
   const handleNavClick = () => {
-    onClose();
+    onCollapse();
   };
 
-  return (
-    <aside
+  const userInitials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+    : "U";
+
+  const renderNavItem = (item: NavItem) => (
+    <NavLink
+      key={item.title}
+      to={item.url}
+      onClick={handleNavClick}
+      title={!expanded ? item.title : undefined}
       className={cn(
-        "fixed top-0 left-0 z-50 h-full w-72 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out flex flex-col",
-        isOpen ? "translate-x-0" : "-translate-x-full"
+        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative",
+        isActive(item.url)
+          ? "bg-white/15 text-white"
+          : "text-white/65 hover:bg-white/10 hover:text-white"
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        <NavLink to="/" className="flex items-center gap-2" onClick={handleNavClick}>
-          <img src={iskconLogo} alt="ISKCON" className="h-8 w-auto" />
-          <div className="w-px h-6 bg-sidebar-border" />
-          <img src={aiheLogo} alt="AIHE" className="h-8 w-auto" />
-        </NavLink>
-        <Button variant="ghost" size="icon" onClick={onClose} className="text-sidebar-foreground hover:bg-sidebar-accent">
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
+      {isActive(item.url) && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+      )}
+      <item.icon className="h-5 w-5 shrink-0" />
+      {expanded && (
+        <span className="truncate whitespace-nowrap">{item.title}</span>
+      )}
+    </NavLink>
+  );
 
-      {/* Scrollable content */}
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-4">
-          {/* Role Switcher */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider px-2">
-              Preview Role (Demo)
+  return (
+    <div
+      className="fixed top-0 left-0 z-50 h-full overflow-hidden transition-[width] duration-300 ease-in-out shadow-xl"
+      style={{
+        width: expanded ? EXPANDED_WIDTH : RAIL_WIDTH,
+        background: "linear-gradient(180deg, #1e2340 0%, #161b30 100%)",
+        borderRight: "1px solid rgba(255,255,255,0.07)",
+      }}
+      onMouseEnter={onExpand}
+      onMouseLeave={onCollapse}
+    >
+      <aside className="flex h-full w-full min-w-0 flex-col">
+
+        {/* Logo Section */}
+        <div
+          className="flex shrink-0 items-center border-b"
+          style={{
+            borderColor: "rgba(255,255,255,0.08)",
+            height: 64,
+            padding: expanded ? "0 16px" : "0 12px",
+            justifyContent: expanded ? "flex-start" : "center",
+            overflow: "hidden",
+          }}
+        >
+          {expanded ? (
+            <NavLink to="/" className="flex items-center gap-2.5" onClick={handleNavClick}>
+              <img src={iskconLogo} alt="ISKCON" className="h-9 w-auto shrink-0" />
+              <div className="h-6 w-px shrink-0 bg-white/20" />
+              <img src={aiheLogo} alt="AIHE" className="h-9 w-auto shrink-0" />
+            </NavLink>
+          ) : (
+            <NavLink to="/" onClick={handleNavClick} className="flex items-center justify-center gap-1">
+              <img src={iskconLogo} alt="ISKCON" className="h-7 w-auto shrink-0" />
+            </NavLink>
+          )}
+        </div>
+
+        {/* Nav Items */}
+        <ScrollArea className="flex-1 py-3">
+          <div className={cn("flex flex-col gap-0.5", expanded ? "px-3" : "px-2")}>
+
+            {/* Main Nav */}
+            {filteredNavItems.map(renderNavItem)}
+
+            {/* Admin Section */}
+            {filteredAdminItems.length > 0 && (
+              <>
+                <div
+                  className="my-2 border-t"
+                  style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                />
+                {expanded && (
+                  <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/35">
+                    Administration
+                  </p>
+                )}
+                {filteredAdminItems.map(renderNavItem)}
+              </>
+            )}
+
+            {/* Super Admin Section */}
+            {filteredSuperAdminItems.length > 0 && (
+              <>
+                <div
+                  className="my-2 border-t"
+                  style={{ borderColor: "rgba(255,255,255,0.08)" }}
+                />
+                {expanded && (
+                  <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/35">
+                    System
+                  </p>
+                )}
+                {filteredSuperAdminItems.map(renderNavItem)}
+              </>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Role Switcher (only when expanded) */}
+        {expanded && (
+          <div
+            className="shrink-0 border-t px-3 py-3"
+            style={{ borderColor: "rgba(255,255,255,0.08)" }}
+          >
+            <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-widest text-white/35">
+              Preview Role
             </p>
             <DropdownMenu>
-              <DropdownMenuTrigger className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-sidebar-accent hover:bg-sidebar-accent/80 transition-colors text-sidebar-foreground">
-                <span className="text-sm font-medium capitalize">{role}</span>
-                <ChevronDown className="h-4 w-4 opacity-60" />
+              <DropdownMenuTrigger className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10">
+                <span className="capitalize">{role}</span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuContent align="start" className="w-52">
                 <DropdownMenuItem onClick={() => setRole("user")}>
                   <span>User</span>
                   <Badge variant="secondary" className="ml-auto">Default</Badge>
@@ -135,109 +229,55 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        )}
 
-          {/* Main Navigation */}
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider px-2 mb-2">
-              Main
-            </p>
-            {filteredNavItems.map((item) => (
-              <NavLink
-                key={item.title}
-                to={item.url}
-                onClick={handleNavClick}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                  isActive(item.url)
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
-                )}
+        {/* User Footer */}
+        <div
+          className="shrink-0 border-t p-3"
+          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+        >
+          {user ? (
+            <div className={cn("flex items-center gap-3", !expanded && "justify-center")}>
+              <Avatar className="h-9 w-9 shrink-0 border-2" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
+                <AvatarFallback className="text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #6c63ff, #4f46e5)" }}>
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              {expanded && (
+                <>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">{user.name}</p>
+                    <Badge variant={getRoleBadgeVariant(role)} className="mt-0.5 text-[10px] px-1.5 py-0">
+                      {role}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={logout}
+                    className="shrink-0 text-white/50 hover:bg-white/10 hover:text-white"
+                    title="Logout"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+          ) : (
+            !expanded && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={logout}
+                className="mx-auto flex text-white/50 hover:bg-white/10 hover:text-white"
+                title="Logout"
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                <span>{item.title}</span>
-              </NavLink>
-            ))}
-          </div>
-
-          {/* Admin Section */}
-          {filteredAdminItems.length > 0 && (
-            <div className="space-y-1 pt-2 border-t border-sidebar-border">
-              <p className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider px-2 mb-2 mt-2">
-                Administration
-              </p>
-              {filteredAdminItems.map((item) => (
-                <NavLink
-                  key={item.title}
-                  to={item.url}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                    isActive(item.url)
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
-                  )}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.title}</span>
-                </NavLink>
-              ))}
-            </div>
-          )}
-
-          {/* SuperAdmin Section */}
-          {filteredSuperAdminItems.length > 0 && (
-            <div className="space-y-1 pt-2 border-t border-sidebar-border">
-              <p className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider px-2 mb-2 mt-2">
-                System
-              </p>
-              {filteredSuperAdminItems.map((item) => (
-                <NavLink
-                  key={item.title}
-                  to={item.url}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                    isActive(item.url)
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
-                  )}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.title}</span>
-                </NavLink>
-              ))}
-            </div>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )
           )}
         </div>
-      </ScrollArea>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-sidebar-border mt-auto">
-        {user && (
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-sidebar-accent">
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                {user.name.split(" ").map((n) => n[0]).join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
-              <Badge variant={getRoleBadgeVariant(role)} className="text-xs mt-0.5">
-                {role}
-              </Badge>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              className="text-sidebar-foreground hover:bg-sidebar-accent"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </aside>
+      </aside>
+    </div>
   );
 }

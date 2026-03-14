@@ -18,6 +18,8 @@ import AttendanceManager from "@/pages/dashboard/AttendanceManager";
 import Gradebook from "@/pages/dashboard/Gradebook";
 import UserManagement from "@/pages/dashboard/UserManagement";
 import CourseCreator from "@/pages/dashboard/CourseCreator";
+import MediaManager from "@/pages/dashboard/MediaManager";
+import InstructorManager from "@/pages/dashboard/InstructorManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +51,8 @@ const App = () => (
               <Route path="gradebook" element={<Gradebook />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="course-creator" element={<CourseCreator />} />
+              <Route path="media-manager" element={<MediaManager />} />
+              <Route path="instructors" element={<InstructorManager />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
