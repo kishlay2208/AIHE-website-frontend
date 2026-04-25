@@ -54,10 +54,10 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
             <User className="w-4 h-4 text-primary" />
             <span>{course.instructor}</span>
           </div>
-          {course.timing && (
+          {course.duration && (
             <div className="flex items-center gap-2 text-sm text-foreground/80">
               <Clock className="w-4 h-4 text-primary" />
-              <span>{course.duration} | {course.timing}</span>
+              <span>{course.duration}{course.timing ? ` | ${course.timing}` : ""}</span>
             </div>
           )}
           <div className="flex items-center gap-2 text-sm text-foreground/80">
@@ -68,15 +68,15 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="flex items-center gap-1 text-foreground">
-            <IndianRupee className="w-5 h-5" />
-            <span className="text-2xl font-bold">{course.fee.toLocaleString()}</span>
+            {course.currency === "INR" || !course.currency ? <IndianRupee className="w-5 h-5" /> : <span>{course.currency} </span>}
+            <span className="text-2xl font-bold">{course.fee > 0 ? course.fee.toLocaleString() : "Free"}</span>
           </div>
           <Button 
             variant="default" 
             size="sm"
             onClick={() => onRegister(course)}
           >
-            Register Now
+            {course.registrationFormUrl ? "Register Now" : "Coming Soon"}
           </Button>
         </div>
       </div>

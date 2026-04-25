@@ -1,27 +1,12 @@
 import { useState, useEffect } from "react";
-import { Menu, X, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
-import AuthDialog from "@/components/AuthDialog";
 import iskconLogo from "@/assets/iskcon-logo.png";
 import aiheLogo from "@/assets/aihe-logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { isLoggedIn } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLoginClick = () => {
-    if (isLoggedIn) {
-      navigate("/dashboard");
-    } else {
-      setIsAuthDialogOpen(true);
-    }
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,16 +71,6 @@ const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button
-                variant={isScrolled ? "secondary" : "outline"}
-                size="sm"
-                className={`hidden md:flex ${!isScrolled ? "border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" : ""}`}
-                onClick={handleLoginClick}
-              >
-                <User className="w-4 h-4" />
-                {isLoggedIn ? "Dashboard" : "Login"}
-              </Button>
-
               {/* Mobile Menu Button */}
               <button
                 className={`lg:hidden p-2 ${isScrolled ? "text-primary-foreground" : "text-primary-foreground"}`}
@@ -127,24 +102,11 @@ const Header = () => {
                     {link.name}
                   </a>
                 ))}
-                <Button
-                  variant="secondary"
-                  className="mt-2"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleLoginClick();
-                  }}
-                >
-                  <User className="w-4 h-4" />
-                  {isLoggedIn ? "Go to Dashboard" : "Login"}
-                </Button>
               </nav>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
-      
-      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </>
   );
 };

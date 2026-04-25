@@ -19,7 +19,9 @@ export interface Course {
   currency: string;
   type: "idc" | "bhakti-shastri" | "bhakti-vaibhav";
   status: "ongoing" | "upcoming";
+  registrationFormUrl?: string;
 }
+
 
 export interface Instructor {
   id: number;

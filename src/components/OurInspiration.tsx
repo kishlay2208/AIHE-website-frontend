@@ -8,6 +8,7 @@ interface InspirationCard {
   id: string;
   name: string;
   title: string;
+  subtitle: string;
   image: string;
   quote: string;
 }
@@ -16,21 +17,28 @@ const inspirations: InspirationCard[] = [
   {
     id: "prabhupada",
     name: "Srila Prabhupada",
-    title: "Founder-Acharya of ISKCON",
+    title: "Founder-Acharya of the International Society for Krishna Consciousness",
+    subtitle:
+      "The World Acharya who brought the light of Bhagavata Dharma to every town and village.",
     image: srilaPrabhupada,
     quote: "Human life is meant for God realization.",
   },
   {
     id: "bhakti-charu",
     name: "HH Bhakti Charu Swami Maharaja",
-    title: "Visionary Leader, Disciple of Srila Prabhupada",
+    title:
+      "Visionary Founder of ISKCON Ujjain & Beloved Disciple of Srila Prabhupada",
+    subtitle:
+      "An embodiment of Vaishnava etiquette who manifested this holy tirtha in Ujjain for the pleasure of his Guru.",
     image: bhaktiCharuSwami,
     quote: "Service to the devotees is the highest service.",
   },
   {
     id: "bhakti-prema",
     name: "HH Bhakti Prema Swami Maharaja",
-    title: "Guide, AIHE",
+    title: "Chairman of ISKCON Ujjain & Inspirational Guide",
+    subtitle:
+      "Dedicated Sannyasi and Preacher carrying forward the legacy of systematic spiritual education.",
     image: bhaktiPremaSwami,
     quote: "Education in devotion transforms the heart.",
   },
@@ -40,8 +48,9 @@ const OurInspiration = () => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
-    <section id="inspiration" className="py-20 bg-primary">
+    <section id="inspiration" className="py-20 md:py-28 bg-primary">
       <div className="container mx-auto px-4">
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,15 +58,19 @@ const OurInspiration = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-light-bg mb-4 tracking-wide">
+          <span className="font-sans text-orange-light font-medium tracking-widest uppercase text-xs sm:text-sm">
+            Parampara
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-light-bg mt-3 mb-4 tracking-wide">
             Our Inspiration
           </h2>
-          <p className="text-light-bg/70 text-lg max-w-2xl mx-auto">
-            Honoring the spiritual lineage (Parampara) that guides our institute
+          <p className="font-sans text-light-bg/70 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            Honoring the spiritual lineage that guides our institute
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
           {inspirations.map((person, index) => (
             <motion.div
               key={person.id}
@@ -72,7 +85,7 @@ const OurInspiration = () => {
               <div
                 className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${
                   hoveredId === person.id
-                    ? "shadow-[0_0_40px_rgba(254,252,253,0.3)]"
+                    ? "shadow-[0_0_40px_rgba(254,252,253,0.25)] scale-[1.02]"
                     : "shadow-lg"
                 }`}
               >
@@ -81,30 +94,40 @@ const OurInspiration = () => {
                   <img
                     src={person.image}
                     alt={person.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
 
                 {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent opacity-85" />
 
                 {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-light-bg">
-                  <h3 className="text-xl font-bold mb-1">{person.name}</h3>
-                  <p className="text-light-bg/70 text-sm mb-3">{person.title}</p>
+                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 text-light-bg">
+                  {/* Name */}
+                  <h3 className="font-serif text-lg sm:text-xl font-bold mb-1 leading-snug">
+                    {person.name}
+                  </h3>
 
-                  {/* Quote on hover */}
+                  {/* Title */}
+                  <p className="font-sans text-orange-light/90 text-xs sm:text-sm font-medium leading-snug mb-1">
+                    {person.title}
+                  </p>
+
+                  {/* Subtitle visible on hover */}
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{
                       opacity: hoveredId === person.id ? 1 : 0,
                       height: hoveredId === person.id ? "auto" : 0,
                     }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.35 }}
                     className="overflow-hidden"
                   >
-                    <p className="text-light-bg/90 italic text-sm border-l-2 border-orange pl-3">
-                      "{person.quote}"
+                    <p className="font-sans text-light-bg/80 text-xs sm:text-sm leading-relaxed mt-2 border-l-2 border-orange pl-3">
+                      {person.subtitle}
+                    </p>
+                    <p className="font-serif italic text-light-bg/70 text-xs sm:text-sm mt-2">
+                      &ldquo;{person.quote}&rdquo;
                     </p>
                   </motion.div>
                 </div>
