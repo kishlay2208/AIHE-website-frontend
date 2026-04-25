@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  aihe-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    container_name: aihe-frontend
+    ports:
+      - "3000:80"
+    restart: always
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    # For development, you can use a separate profile or override this
+    # but since it's a compose file "only for frontend", I'll focus on production serving.
+    
+networks:
+  default:
+    name: aihe-network
+    driver: bridge

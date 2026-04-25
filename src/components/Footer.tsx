@@ -24,9 +24,9 @@ const Footer = () => {
           {/* About */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src={aiheLogo} alt="AIHE" className="h-14 w-auto" />
-              <div className="w-px h-10 bg-light-bg/30" />
-              <img src={iskconLogo} alt="ISKCON Ujjain" className="h-12 w-auto invert" />
+              <img src={aiheLogo} alt="AIHE" className="h-16 w-auto" />
+              <div className="w-px h-14 bg-light-bg/30" />
+              <img src={iskconLogo} alt="ISKCON Ujjain" className="h-16 w-auto brightness-0 invert" />
             </div>
             <p className="text-light-bg/70 text-sm leading-relaxed">
               Avantika Institute for Higher Education is dedicated to providing
@@ -76,9 +76,9 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-orange mt-0.5 shrink-0" />
                 <span className="text-light-bg/70 text-sm">
-                  Sri Sri Radha Madanmohanji Temple,<br />
-                  Hare Krishna Dham, Ujjain,<br />
-                  Madhya Pradesh 456010, India
+                  Sri Sri Radha Madanmohan Temple,<br />
+                  Hare Krishna Land, 33-37, Administrative Zone,<br />
+                  Bharatpuri, Ujjain, Madhya Pradesh 456010
                 </span>
               </li>
               <li className="flex items-center gap-3">

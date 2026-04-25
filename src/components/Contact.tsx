@@ -88,38 +88,52 @@ const Contact = () => {
             transition={{ duration: 0.5 }}
             className="lg:col-span-2 flex flex-col gap-6"
           >
-            <div className="bg-primary/5 rounded-2xl p-6 sm:p-8 border border-border space-y-6">
-              <h3 className="font-serif text-xl font-bold text-primary">
-                ISKCON Ujjain — AIHE
-              </h3>
-
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-accent mt-0.5 shrink-0" />
-                <p className="font-sans text-foreground/80 text-sm leading-relaxed">
-                  Sri Sri Radha Madanmohanji Temple,<br />
-                  Hare Krishna Dham, Ujjain,<br />
-                  Madhya Pradesh 456010, India
+            <div className="bg-primary/5 rounded-2xl p-6 sm:p-8 border border-border space-y-8">
+              <div>
+                <h3 className="font-serif text-2xl font-bold text-primary mb-1">
+                  ISKCON Ujjain
+                </h3>
+                <p className="font-sans text-accent font-medium text-sm">
+                  Avantika Institute of Higher Education (AIHE)
                 </p>
+                <div className="w-12 h-1 bg-accent mt-4 rounded-full" />
               </div>
 
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-accent shrink-0" />
-                <a
-                  href="tel:+918717895059"
-                  className="font-sans text-foreground/80 hover:text-accent transition-colors text-sm"
-                >
-                  +91 8717895059
-                </a>
-              </div>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-accent" />
+                  </div>
+                  <p className="font-sans text-foreground/80 text-sm leading-relaxed pt-1">
+                    Sri Sri Radha Madanmohan Temple,<br />
+                    Hare Krishna Land, 33-37, Administrative Zone,<br />
+                    Bharatpuri, Ujjain, Madhya Pradesh 456010
+                  </p>
+                </div>
 
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-accent shrink-0" />
-                <a
-                  href="mailto:aihe@iskconujjain.com"
-                  className="font-sans text-foreground/80 hover:text-accent transition-colors text-sm"
-                >
-                  aihe@iskconujjain.com
-                </a>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                    <Phone className="w-5 h-5 text-accent" />
+                  </div>
+                  <a
+                    href="tel:+918717895059"
+                    className="font-sans text-foreground/80 hover:text-accent transition-colors text-sm font-medium"
+                  >
+                    +91 8717895059
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5 text-accent" />
+                  </div>
+                  <a
+                    href="mailto:aihe@iskconujjain.com"
+                    className="font-sans text-foreground/80 hover:text-accent transition-colors text-sm font-medium"
+                  >
+                    aihe@iskconujjain.com
+                  </a>
+                </div>
               </div>
             </div>
           </motion.div>

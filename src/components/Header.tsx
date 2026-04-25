@@ -42,13 +42,13 @@ const Header = () => {
               <img 
                 src={iskconLogo} 
                 alt="ISKCON Ujjain" 
-                className="h-10 md:h-12 w-auto"
+                className="h-14 md:h-18 w-auto brightness-0 invert"
               />
-              <div className="w-px h-8 bg-primary-foreground/30" />
+              <div className="w-px h-12 bg-primary-foreground/30" />
               <img 
                 src={aiheLogo} 
                 alt="AIHE" 
-                className="h-10 md:h-12 w-auto"
+                className="h-14 md:h-18 w-auto"
               />
             </a>
 
