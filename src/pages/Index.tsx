@@ -9,6 +9,7 @@ import Courses from "@/components/Courses";
 import Instructors from "@/components/Instructors";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Course } from "@/types";
 
 const Index = () => {
@@ -40,6 +41,7 @@ const Index = () => {
       </main>
       
       <Footer />
+      <WhatsAppButton />
       <Toaster />
     </div>
   );

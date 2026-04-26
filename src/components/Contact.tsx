@@ -2,6 +2,7 @@ import { useState, FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Send, MapPin, Phone, Mail, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -34,6 +35,9 @@ const Contact = () => {
           body: JSON.stringify({ action: "sendContactEmail", ...formData }),
         });
         setStatus("success");
+        toast.success("Message sent successfully! We will get back to you soon.", {
+          description: "Thank you for reaching out to ISKCON Ujjain (AIHE).",
+        });
       } else {
         // Fallback: open mailto
         const subject = encodeURIComponent(
@@ -47,12 +51,17 @@ const Contact = () => {
           "_self"
         );
         setStatus("success");
+        toast.success("Message sent successfully! We will get back to you soon.", {
+          description: "Thank you for reaching out to ISKCON Ujjain (AIHE).",
+        });
       }
 
       setFormData({ name: "", phone: "", email: "", query: "" });
       setTimeout(() => setStatus("idle"), 4000);
-    } catch {
+    } catch (error) {
+      console.error("Form submission error:", error);
       setStatus("error");
+      toast.error("Failed to send message. Please try again or email us directly.");
       setTimeout(() => setStatus("idle"), 4000);
     }
   };

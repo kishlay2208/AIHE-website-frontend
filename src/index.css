@@ -120,11 +120,11 @@
   /* Hero: left-side gradient only — keeps painting faces visible on the right */
   .gradient-hero {
     background: linear-gradient(
-      to right,
-      hsl(var(--dark-purple) / 0.88) 0%,
-      hsl(var(--dark-purple) / 0.72) 30%,
-      hsl(var(--dark-purple) / 0.35) 60%,
-      hsl(var(--dark-purple) / 0.10) 80%,
+      to top,
+      hsl(var(--dark-purple) / 0.95) 0%,
+      hsl(var(--dark-purple) / 0.75) 30%,
+      hsl(var(--dark-purple) / 0.45) 60%,
+      hsl(var(--dark-purple) / 0.15) 85%,
       transparent 100%
     );
   }

@@ -10,37 +10,33 @@ interface InspirationCard {
   title: string;
   subtitle: string;
   image: string;
-  quote: string;
+  quote?: string;
 }
 
 const inspirations: InspirationCard[] = [
   {
     id: "prabhupada",
-    name: "Srila Prabhupada",
+    name: "His Divine Grace A.C. Bhaktivedanta Swami Prabhupada",
     title: "Founder-Acharya of the International Society for Krishna Consciousness",
     subtitle:
-      "The World Acharya who brought the light of Bhagavata Dharma to every town and village.",
+      "The World-Teacher who built a house in which the whole world can live, and the foremost authority on Bhakti-yoga in the modern era.",
     image: srilaPrabhupada,
-    quote: "Human life is meant for God realization.",
   },
   {
     id: "bhakti-charu",
-    name: "HH Bhakti Charu Swami Maharaja",
-    title:
-      "Visionary Founder of ISKCON Ujjain & Beloved Disciple of Srila Prabhupada",
+    name: "His Holiness Bhakti Charu Swami Maharaja",
+    title: "An Embodiment of Vaishnava Etiquette and Devotional Excellence",
     subtitle:
-      "An embodiment of Vaishnava etiquette who manifested this holy tirtha in Ujjain for the pleasure of his Guru.",
+      "A beloved disciple of Srila Prabhupada who dedicated his life to manifesting the beauty of the spiritual world through his culture, literature, and the establishment of systematic spiritual education.",
     image: bhaktiCharuSwami,
-    quote: "Service to the devotees is the highest service.",
   },
   {
     id: "bhakti-prema",
-    name: "HH Bhakti Prema Swami Maharaja",
-    title: "Chairman of ISKCON Ujjain & Inspirational Guide",
+    name: "His Holiness Bhakti Prema Swami Maharaja",
+    title: "A Dedicated Servant of the Vision of his Spiritual Master",
     subtitle:
-      "Dedicated Sannyasi and Preacher carrying forward the legacy of systematic spiritual education.",
+      "A scholar and sannyasi whose life is a testament to the power of systematic study, committed to guiding sincere seekers on the path of Bhakti through his realizations of the sacred scriptures.",
     image: bhaktiPremaSwami,
-    quote: "Education in devotion transforms the heart.",
   },
 ];
 
@@ -126,9 +122,11 @@ const OurInspiration = () => {
                     <p className="font-sans text-light-bg/80 text-xs sm:text-sm leading-relaxed mt-2 border-l-2 border-orange pl-3">
                       {person.subtitle}
                     </p>
-                    <p className="font-serif italic text-light-bg/70 text-xs sm:text-sm mt-2">
-                      &ldquo;{person.quote}&rdquo;
-                    </p>
+                    {person.quote && (
+                      <p className="font-serif italic text-light-bg/70 text-xs sm:text-sm mt-2">
+                        &ldquo;{person.quote}&rdquo;
+                      </p>
+                    )}
                   </motion.div>
                 </div>
               </div>
