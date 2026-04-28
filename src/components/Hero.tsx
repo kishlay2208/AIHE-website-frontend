@@ -7,7 +7,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-end pb-20 md:pb-32 overflow-hidden"
+      className="relative min-h-screen flex items-end pt-20 md:pt-28 pb-20 md:pb-32 overflow-hidden"
     >
       {/* Background Image */}
       <div
@@ -37,7 +37,7 @@ const Hero = () => {
           </motion.p>
 
           {/* Main Title */}
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight mb-6 drop-shadow-2xl">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-[1.1] tracking-tight mb-6 drop-shadow-2xl">
             Avantika Institute
             <br />
             <span className="text-orange-light">for Higher</span>

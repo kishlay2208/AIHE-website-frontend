@@ -2,6 +2,7 @@ import axios from "axios";
 import { transformDriveUrl } from "@/lib/utils";
 import type {
   Course,
+  CourseCatalog,
   Instructor,
   ApiResponse,
 } from "@/types";
@@ -15,6 +16,20 @@ class ApiClient {
       console.warn("VITE_API_BASE_URL environment variable is regulated for Google Apps Script integration");
     }
   }
+
+  private cache: {
+    instructors: Instructor[] | null;
+    courses: Course[] | null;
+    catalog: CourseCatalog[] | null;
+    lastFetched: number;
+  } = {
+    instructors: null,
+    courses: null,
+    catalog: null,
+    lastFetched: 0
+  };
+
+  private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   private async fetchFromGas<T>(action: string): Promise<ApiResponse<T>> {
     try {
@@ -33,42 +48,89 @@ class ApiClient {
     }
   }
 
-  // Course endpoints
-  async getCourses(status?: "ongoing" | "upcoming"): Promise<ApiResponse<Course[]>> {
-    const response = await this.fetchFromGas<Course[]>("getCourses");
-    if (response.success && response.data) {
-      const mappedData = response.data.map(c => {
-        // Clean up status: default to "upcoming" if empty or invalid
-        let normalizedStatus = "upcoming";
-        if (c.status && typeof c.status === 'string') {
-          const s = c.status.toLowerCase().trim();
-          if (s === 'ongoing' || s === 'upcoming') {
-            normalizedStatus = s;
-          }
-        }
-
-        return {
-          ...c,
-          thumbnail: transformDriveUrl(c.thumbnail) || "",
-          status: normalizedStatus as "ongoing" | "upcoming"
-        };
-      });
-
-      if (status) {
-        return {
-          ...response,
-          data: mappedData.filter(c => c.status === status)
-        };
-      }
-      return { ...response, data: mappedData };
+  async getAllData(): Promise<boolean> {
+    const now = Date.now();
+    if (this.cache.lastFetched && (now - this.cache.lastFetched < this.CACHE_DURATION)) {
+      return true;
     }
-    return response;
+
+    const response = await this.fetchFromGas<{
+      instructors: Instructor[],
+      courses: Course[],
+      catalog: CourseCatalog[]
+    }>("getAllData");
+
+    if (response.success && response.data && response.data.instructors) {
+      const { instructors, courses, catalog } = response.data;
+      
+      this.cache = {
+        instructors: (instructors || []).map(i => ({
+          ...i,
+          image: transformDriveUrl(i.image) || "",
+          teaches: typeof i.teaches === 'string' 
+            ? (i.teaches as string).split(',').map(s => s.trim())
+            : Array.isArray(i.teaches) ? i.teaches : []
+        })),
+        catalog: (catalog || []).map(c => ({
+          ...c,
+          thumbnail: transformDriveUrl(c.thumbnail) || ""
+        })),
+        courses: (courses || []).map(batch => ({
+          ...batch,
+          status: (batch.status || "Upcoming") as "Upcoming" | "Closed"
+        })),
+        lastFetched: now
+      };
+      return true;
+    }
+    
+    // Safety fallback: if getAllData fails, ensure we don't crash but mark as not fetched
+    if (this.cache.lastFetched === 0) {
+      this.cache = { ...this.cache, instructors: [], courses: [], catalog: [], lastFetched: now };
+    }
+    return false;
+  }
+
+  // Course catalog endpoints
+  async getCourseCatalog(): Promise<ApiResponse<CourseCatalog[]>> {
+    if (!this.cache.catalog) {
+      await this.getAllData();
+    }
+    return {
+      data: this.cache.catalog || [],
+      success: !!this.cache.catalog
+    };
+  }
+
+  // Course (Batch) endpoints
+  async getCourses(status?: "Upcoming" | "Closed"): Promise<ApiResponse<Course[]>> {
+    if (!this.cache.courses || !this.cache.catalog) {
+      await this.getAllData();
+    }
+
+    const catalogMap = new Map(this.cache.catalog?.map(c => [c.courseId, c]) || []);
+    
+    const mappedData = (this.cache.courses || []).map(batch => {
+      const catalog = catalogMap.get(batch.courseId);
+      return {
+        ...batch,
+        catalog: catalog,
+      };
+    });
+
+    if (status) {
+      return {
+        data: mappedData.filter(c => c.status === status),
+        success: true
+      };
+    }
+    return { data: mappedData, success: true };
   }
 
 
   async getCourseById(id: string): Promise<ApiResponse<Course>> {
     const response = await this.getCourses();
-    const course = response.data.find(c => String(c.id) === String(id));
+    const course = response.data.find(c => String(c.batchId) === String(id));
     return {
       data: course as Course,
       success: !!course
@@ -77,21 +139,13 @@ class ApiClient {
 
   // Instructor endpoints
   async getInstructors(): Promise<ApiResponse<Instructor[]>> {
-    const response = await this.fetchFromGas<Instructor[]>("getInstructors");
-    if (response.success && response.data) {
-      return {
-        ...response,
-        data: response.data.map(i => ({
-          ...i,
-          image: transformDriveUrl(i.image) || "",
-          // Ensure teaches is an array if it comes as a comma-separated string
-          teaches: typeof i.teaches === 'string' 
-            ? (i.teaches as string).split(',').map(s => s.trim())
-            : Array.isArray(i.teaches) ? i.teaches : []
-        }))
-      };
+    if (!this.cache.instructors) {
+      await this.getAllData();
     }
-    return response;
+    return {
+      data: this.cache.instructors || [],
+      success: !!this.cache.instructors
+    };
   }
 
   async getInstructorById(id: number): Promise<ApiResponse<Instructor>> {

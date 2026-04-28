@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { useCourses } from "@/services/queries";
+import { useCourses, useCourseCatalog } from "@/services/queries";
 import CourseCard from "./CourseCard";
+import CourseCatalogCard from "./CourseCatalogCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Course } from "@/types";
 
@@ -12,12 +13,12 @@ interface CoursesProps {
 const Courses = ({ onRegister }: CoursesProps) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [activeTab, setActiveTab] = useState("ongoing");
+  const [activeTab, setActiveTab] = useState("catalog");
 
-  const { data: ongoingData, isLoading: ongoingLoading } = useCourses("ongoing");
-  const { data: upcomingData, isLoading: upcomingLoading } = useCourses("upcoming");
+  const { data: catalogData, isLoading: catalogLoading } = useCourseCatalog();
+  const { data: upcomingData, isLoading: upcomingLoading } = useCourses("Upcoming");
 
-  const ongoingCourses = ongoingData?.data || [];
+  const catalogCourses = catalogData?.data || [];
   const upcomingCourses = upcomingData?.data || [];
 
   return (
@@ -30,14 +31,13 @@ const Courses = ({ onRegister }: CoursesProps) => {
           className="text-center mb-12"
         >
           <span className="text-primary font-medium tracking-widest uppercase text-sm">
-            Our Programs
+            AIHE Offerings
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-primary mt-4 mb-6">
-            Explore Our Courses
+            Explore Our Programs
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            Choose from our carefully designed courses that guide you through the
-            essential scriptures and practices of Bhakti Yoga.
+            Broaden your horizons with our systematic study of Vedic wisdom.
           </p>
 
           {/* Inspirational Verse */}
@@ -76,34 +76,33 @@ const Courses = ({ onRegister }: CoursesProps) => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10 bg-secondary h-12">
             <TabsTrigger 
-              value="ongoing" 
+              value="catalog" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
             >
-              Ongoing Courses
+              All Courses
             </TabsTrigger>
             <TabsTrigger 
               value="upcoming"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
             >
-              Upcoming Courses
+              Upcoming Batches
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ongoing">
-            {ongoingLoading ? (
-              <div className="text-center py-12">Loading courses...</div>
-            ) : ongoingCourses.length === 0 ? (
+          <TabsContent value="catalog">
+            {catalogLoading ? (
+              <div className="text-center py-12">Loading course catalog...</div>
+            ) : catalogCourses.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No ongoing courses at the moment.
+                No courses in the catalog at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
-                {ongoingCourses.map((course, index) => (
-                  <CourseCard
-                    key={course.id}
-                    course={course}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {catalogCourses.map((catalog, index) => (
+                  <CourseCatalogCard
+                    key={catalog.courseId}
+                    catalog={catalog}
                     index={index}
-                    onRegister={onRegister}
                   />
                 ))}
               </div>
@@ -112,16 +111,16 @@ const Courses = ({ onRegister }: CoursesProps) => {
 
           <TabsContent value="upcoming">
             {upcomingLoading ? (
-              <div className="text-center py-12">Loading courses...</div>
+              <div className="text-center py-12">Loading upcoming courses...</div>
             ) : upcomingCourses.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No upcoming courses at the moment.
+                No upcoming batches at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
                 {upcomingCourses.map((course, index) => (
                   <CourseCard
-                    key={course.id}
+                    key={course.batchId}
                     course={course}
                     index={index}
                     onRegister={onRegister}

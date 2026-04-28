@@ -28,10 +28,10 @@ const Footer = () => {
               <div className="w-px h-14 bg-light-bg/30" />
               <img src={iskconLogo} alt="ISKCON Ujjain" className="h-16 w-auto brightness-0 invert" />
             </div>
-            <p className="text-light-bg/70 text-sm leading-relaxed">
-              Avantika Institute for Higher Education is dedicated to providing
-              authentic spiritual education in the Gaudiya Vaishnava tradition
-              under the guidance of ISKCON Ujjain.
+            <p className="text-light-bg/70 text-xs leading-relaxed">
+              The AIHE aims to preserve and disseminate standards Srila Prabhupada set for acting 
+              in Krishna consciousness and to deepen devotee's understanding, realization and 
+              appreciation of Srila Prabhupada's teachings and movement.
             </p>
           </div>
 

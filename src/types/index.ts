@@ -1,25 +1,27 @@
-export interface Course {
-  id: string;
-  title: string;
-  subtitle: string;
+export interface CourseCatalog {
+  courseId: string;
+  name: string;
   description: string;
+  duration: string;
+  enrollmentCriteria: string;
   thumbnail: string;
+  curriculumSummary: string;
+}
+
+export interface Course {
+  batchId: string;
+  courseId: string;
   startDate: string;
   endDate?: string;
-  instructor: string;
+  instructorId: string; // Mapping to Instructor.id
   language: string;
   mode: string;
-  duration: string;
-  sessions?: number;
-  sessionsPerWeek?: number;
-  timing?: string;
-  videos?: number;
-  eligibility: string;
   fee: number;
   currency: string;
-  type: "idc" | "bhakti-shastri" | "bhakti-vaibhav";
-  status: "ongoing" | "upcoming";
-  registrationFormUrl?: string;
+  status: "Upcoming" | "Closed";
+  registrationFormUrl: string;
+  // Transformed fields (joined from catalog)
+  catalog?: CourseCatalog;
 }
 
 
@@ -32,6 +34,7 @@ export interface Instructor {
   fullBio: string;
   teaches: string[];
   tier: "senior" | "instructor";
+  category: "Full-Time Instructor" | "Guest Speaker";
 }
 
 export interface User {

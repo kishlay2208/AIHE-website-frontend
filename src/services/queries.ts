@@ -2,7 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "./api";
 
 // Course queries
-export const useCourses = (status?: "ongoing" | "upcoming") => {
+export const useCourseCatalog = () => {
+  return useQuery({
+    queryKey: ["courseCatalog"],
+    queryFn: () => apiClient.getCourseCatalog(),
+  });
+};
+
+export const useCourses = (status?: "Upcoming" | "Closed") => {
   return useQuery({
     queryKey: ["courses", status],
     queryFn: () => apiClient.getCourses(status),

@@ -12,8 +12,16 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Course } from "@/types";
 
+import { useEffect } from "react";
+import { apiClient } from "@/services/api";
+
 const Index = () => {
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Prefetch all data to cache it
+    apiClient.getAllData();
+  }, []);
 
   const handleRegister = (course: Course) => {
     if (course.registrationFormUrl) {

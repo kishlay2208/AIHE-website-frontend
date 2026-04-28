@@ -47,10 +47,12 @@ const About = () => {
             Nurturing Spiritual Excellence
           </h2>
           <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
-            Avantika Institute for Higher Education (AIHE) is a subsidiary of ISKCON Ujjain,
-            dedicated to providing systematic spiritual education in the Gaudiya Vaishnava tradition.
-            Our courses are designed to deepen your understanding of Vedic philosophy and
-            support your journey on the path of devotional service.
+            The AIHE aims to preserve and disseminate standards Srila Prabhupada set for acting 
+            in Krishna consciousness and to deepen devotee's understanding, realization and 
+            appreciation of Srila Prabhupada's teachings and movement. Thus, the Krishna conscious 
+            culture and values that Srila Prabhupada gave us can be passed on to successive 
+            generations. All courses are well researched and taught by senior devotees who have a 
+            deep understanding of the subject.
           </p>
         </motion.div>
 
