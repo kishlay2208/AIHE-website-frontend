@@ -4,6 +4,13 @@ import { useCourses, useCourseCatalog } from "@/services/queries";
 import CourseCard from "./CourseCard";
 import CourseCatalogCard from "./CourseCatalogCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import type { Course } from "@/types";
 
 interface CoursesProps {
@@ -97,15 +104,30 @@ const Courses = ({ onRegister }: CoursesProps) => {
                 No courses in the catalog at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {catalogCourses.map((catalog, index) => (
-                  <CourseCatalogCard
-                    key={catalog.courseId}
-                    catalog={catalog}
-                    index={index}
-                  />
-                ))}
-              </div>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full relative px-12"
+              >
+                <CarouselContent className="-ml-4">
+                  {catalogCourses.map((catalog, index) => (
+                    <CarouselItem key={catalog.courseId} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="h-full py-4">
+                        <CourseCatalogCard
+                          catalog={catalog}
+                          index={index}
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                </div>
+              </Carousel>
             )}
           </TabsContent>
 
@@ -117,16 +139,31 @@ const Courses = ({ onRegister }: CoursesProps) => {
                 No upcoming batches at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-                {upcomingCourses.map((course, index) => (
-                  <CourseCard
-                    key={course.batchId}
-                    course={course}
-                    index={index}
-                    onRegister={onRegister}
-                  />
-                ))}
-              </div>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full max-w-5xl mx-auto relative px-12"
+              >
+                <CarouselContent className="-ml-4">
+                  {upcomingCourses.map((course, index) => (
+                    <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
+                      <div className="h-full py-4">
+                        <CourseCard
+                          course={course}
+                          index={index}
+                          onRegister={onRegister}
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                </div>
+              </Carousel>
             )}
           </TabsContent>
         </Tabs>

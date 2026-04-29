@@ -14,8 +14,8 @@ export function transformDriveUrl(url: string | undefined): string | undefined {
   
   if (match && match[1]) {
     const fileId = match[1];
-    // Return a reliable thumbnail URL that works well for previewing images
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+    // Use the direct image content link which is more reliable for embedding
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
   }
   
   return url;

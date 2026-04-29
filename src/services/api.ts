@@ -33,9 +33,15 @@ class ApiClient {
 
   private async fetchFromGas<T>(action: string): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.get(`${this.baseURL}?action=${action}`);
+      const url = `${this.baseURL.trim()}?action=${action}`;
+      const response = await axios.get(url);
+      
+      // Google Apps Script sometimes returns { data: [...] } and sometimes [...]
+      // depending on how the doGet() is implemented in the script.
+      const responseData = response.data.data !== undefined ? response.data.data : response.data;
+      
       return {
-        data: response.data.data,
+        data: responseData,
         success: true
       };
     } catch (error) {
@@ -54,35 +60,55 @@ class ApiClient {
       return true;
     }
 
+    console.log("Fetching all data from GAS...");
     const response = await this.fetchFromGas<{
       instructors: Instructor[],
       courses: Course[],
       catalog: CourseCatalog[]
     }>("getAllData");
 
-    if (response.success && response.data && response.data.instructors) {
-      const { instructors, courses, catalog } = response.data;
+    if (response.success && response.data) {
+      // Normalize data keys just in case (e.g. Instructors vs instructors)
+      const data = response.data as any;
+      const instructors = data.instructors || data.Instructors || [];
+      const courses = data.courses || data.Courses || [];
+      const catalog = data.catalog || data.Catalog || [];
       
+      console.log("Data fetched successfully:", { 
+        instructorsCount: instructors.length, 
+        coursesCount: courses.length, 
+        catalogCount: catalog.length 
+      });
+
       this.cache = {
-        instructors: (instructors || []).map(i => ({
+        instructors: instructors.map((i: any) => ({
           ...i,
-          image: transformDriveUrl(i.image) || "",
+          id: i.id || i.ID || i.instructor_id || i.InstructorID,
+          name: i.name || i.Name || i.FullName || i.Full_Name,
+          title: i.title || i.Title || i.Designation,
+          image: transformDriveUrl(i.image || i.Image || i.image_url || i.Photo || i.Picture || i.ProfilePhoto) || "",
           teaches: typeof i.teaches === 'string' 
-            ? (i.teaches as string).split(',').map(s => s.trim())
+            ? i.teaches.split(',').map((s: string) => s.trim())
             : Array.isArray(i.teaches) ? i.teaches : []
         })),
-        catalog: (catalog || []).map(c => ({
+        catalog: catalog.map((c: any) => ({
           ...c,
-          thumbnail: transformDriveUrl(c.thumbnail) || ""
+          courseId: c.courseId || c.course_id || c.CourseID,
+          name: c.name || c.Name || c.title || c.Title || c.CourseName,
+          thumbnail: transformDriveUrl(c.thumbnail || c.Thumbnail || c.image || c.Image || c.Photo || c.Picture) || ""
         })),
-        courses: (courses || []).map(batch => ({
+        courses: courses.map((batch: any) => ({
           ...batch,
-          status: (batch.status || "Upcoming") as "Upcoming" | "Closed"
+          batchId: batch.batchId || batch.batch_id || batch.BatchID,
+          courseId: batch.courseId || batch.course_id || batch.CourseID,
+          status: (batch.status || batch.Status || "Upcoming") as "Upcoming" | "Closed"
         })),
         lastFetched: now
       };
       return true;
     }
+    
+    console.error("Failed to fetch data from GAS:", response.message);
     
     // Safety fallback: if getAllData fails, ensure we don't crash but mark as not fetched
     if (this.cache.lastFetched === 0) {
