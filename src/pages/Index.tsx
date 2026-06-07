@@ -41,10 +41,10 @@ const Index = () => {
       <main>
         <Hero />
         <About />
-        <OurInspiration />
         <SystematicStudy />
         <Courses onRegister={handleRegister} />
         <Instructors />
+        <OurInspiration />
         <Contact />
       </main>
       

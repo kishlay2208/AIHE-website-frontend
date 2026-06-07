@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { BookOpen, Users, Award, Heart } from "lucide-react";
+import QuoteSlider from "./QuoteSlider";
 
 const features = [
   {
@@ -79,21 +80,8 @@ const About = () => {
           ))}
         </div>
 
-        {/* Mission Statement */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="mt-16 p-8 md:p-12 bg-card rounded-2xl border border-primary/20 text-center shadow-lg"
-        >
-          <blockquote className="font-serif text-xl md:text-2xl text-foreground italic leading-relaxed max-w-3xl mx-auto">
-            "The purpose of education is to lead one from darkness to light, from ignorance to knowledge,
-            and ultimately to the loving service of the Supreme Lord."
-          </blockquote>
-          <p className="text-primary mt-6 font-medium">
-            — Based on the teachings of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada
-          </p>
-        </motion.div>
+        {/* Quote Slider */}
+        <QuoteSlider />
       </div>
     </section>
   );

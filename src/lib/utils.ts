@@ -20,3 +20,65 @@ export function transformDriveUrl(url: string | undefined): string | undefined {
   
   return url;
 }
+
+export function parseDate(dateStr: any): Date | null {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) return dateStr;
+  
+  const str = String(dateStr).trim();
+  // Try standard YYYY-MM-DD
+  let d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+  
+  // Try DD-MM-YYYY or DD/MM/YYYY
+  const parts = str.split(/[-/]/);
+  if (parts.length === 3) {
+    if (parts[2].length === 4) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // 0-indexed
+      const year = parseInt(parts[2], 10);
+      d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (parts[0].length === 4) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  return null;
+}
+
+export function isCourseLive(startDateStr: string, endDateStr?: string): boolean {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const start = parseDate(startDateStr);
+  if (!start) return false;
+
+  const startMinus2Days = new Date(start);
+  startMinus2Days.setDate(startMinus2Days.getDate() - 2);
+  startMinus2Days.setHours(0, 0, 0, 0);
+
+  const end = parseDate(endDateStr);
+  const endVal = end ? new Date(end) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days default fallback
+  endVal.setHours(23, 59, 59, 999);
+
+  return now >= startMinus2Days && now <= endVal;
+}
+
+export function isCourseUpcoming(startDateStr: string): boolean {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const start = parseDate(startDateStr);
+  if (!start) return false;
+
+  const startMinus2Days = new Date(start);
+  startMinus2Days.setDate(startMinus2Days.getDate() - 2);
+  startMinus2Days.setHours(0, 0, 0, 0);
+
+  return now < startMinus2Days;
+}

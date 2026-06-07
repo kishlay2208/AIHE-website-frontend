@@ -93,15 +93,27 @@ class ApiClient {
         })),
         catalog: catalog.map((c: any) => ({
           ...c,
-          courseId: c.courseId || c.course_id || c.CourseID,
-          name: c.name || c.Name || c.title || c.Title || c.CourseName,
+          courseId: c.courseId || c.course_id || c.CourseID || c.courseid || "",
+          name: c.name || c.Name || c.title || c.Title || c.CourseName || "",
+          mode: c.mode || c.Mode || "Online",
           thumbnail: transformDriveUrl(c.thumbnail || c.Thumbnail || c.image || c.Image || c.Photo || c.Picture) || ""
         })),
         courses: courses.map((batch: any) => ({
           ...batch,
-          batchId: batch.batchId || batch.batch_id || batch.BatchID,
-          courseId: batch.courseId || batch.course_id || batch.CourseID,
-          status: (batch.status || batch.Status || "Upcoming") as "Upcoming" | "Closed"
+          batchId: batch.batchId || batch.batch_id || batch.BatchID || batch.id || batch.ID || `batch-${batch.courseId || batch.course_id || batch.courseid}-${batch.startDate || batch.start_date || batch.startdate}`,
+          courseId: batch.courseId || batch.course_id || batch.CourseID || batch.courseid || "",
+          startDate: batch.startDate || batch.start_date || batch.StartDate || batch.startdate || "",
+          endDate: batch.endDate || batch.end_date || batch.EndDate || batch.enddate || "",
+          instructorId: batch.instructorId || batch.instructor_id || batch.InstructorID || batch.instructorid || "",
+          fee: Number(batch.fee || batch.Fee || 0),
+          currency: "INR",
+          language: batch.language || batch.Language || "Hindi",
+          mode: batch.mode || batch.Mode || "Online",
+          timings: batch.timings || batch.Timings || batch.timing || batch.Timing || "",
+          days: batch.days || batch.Days || "",
+          duration: batch.duration || batch.Duration || "",
+          thumbnail: transformDriveUrl(batch.thumbnail || batch.Thumbnail || batch.course_thumbnail_image || batch.image || batch.Image || batch.courseThumbnailImage) || "",
+          registrationFormUrl: batch.registrationFormUrl || batch.registration_form_url || batch.RegistrationFormUrl || batch.registrationformurl || ""
         })),
         lastFetched: now
       };
@@ -129,7 +141,7 @@ class ApiClient {
   }
 
   // Course (Batch) endpoints
-  async getCourses(status?: "Upcoming" | "Closed"): Promise<ApiResponse<Course[]>> {
+  async getCourses(): Promise<ApiResponse<Course[]>> {
     if (!this.cache.courses || !this.cache.catalog) {
       await this.getAllData();
     }
@@ -144,12 +156,6 @@ class ApiClient {
       };
     });
 
-    if (status) {
-      return {
-        data: mappedData.filter(c => c.status === status),
-        success: true
-      };
-    }
     return { data: mappedData, success: true };
   }
 

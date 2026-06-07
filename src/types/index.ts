@@ -6,6 +6,7 @@ export interface CourseCatalog {
   enrollmentCriteria: string;
   thumbnail: string;
   curriculumSummary: string;
+  mode: string; // online/offline
 }
 
 export interface Course {
@@ -17,9 +18,13 @@ export interface Course {
   language: string;
   mode: string;
   fee: number;
-  currency: string;
-  status: "Upcoming" | "Closed";
-  registrationFormUrl: string;
+  currency?: string;
+  status?: "Upcoming" | "Closed";
+  registrationFormUrl?: string;
+  timings?: string;
+  days?: string;
+  duration?: string;
+  thumbnail?: string; // course thumbnail image overriding catalog
   // Transformed fields (joined from catalog)
   catalog?: CourseCatalog;
 }

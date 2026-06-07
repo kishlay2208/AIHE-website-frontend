@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Globe, IndianRupee } from "lucide-react";
+import { Calendar, Globe, IndianRupee, Clock, CalendarDays, Timer, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/types";
 
@@ -12,8 +12,9 @@ interface CourseCardProps {
 const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
   const { catalog } = course;
   const title = catalog?.name || "Loading...";
-  const thumbnail = catalog?.thumbnail || "/placeholder.svg";
+  const thumbnail = course.thumbnail || catalog?.thumbnail || "/placeholder.svg";
   const description = catalog?.description || "";
+  const isRegistrationOpen = !!course.registrationFormUrl;
 
   return (
     <motion.div
@@ -32,11 +33,11 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40" />
         <div className="absolute top-4 right-4">
           <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-xl backdrop-blur-md border ${
-            course.status === "Closed" 
-              ? "bg-red-500/90 text-white border-red-400/30" 
-              : "bg-green-500/90 text-white border-green-400/30"
+            isRegistrationOpen 
+              ? "bg-green-500/90 text-white border-green-400/30" 
+              : "bg-amber-500/90 text-white border-amber-400/30"
           }`}>
-            {course.status === "Closed" ? "Registration (Closed)" : "Registration (Open)"}
+            {isRegistrationOpen ? "Registration Open" : "Coming Soon"}
           </div>
         </div>
         <div className="absolute bottom-5 left-6 right-6">
@@ -51,24 +52,83 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
           {description}
         </p>
 
-        <div className="space-y-4 mb-8 bg-secondary/20 p-5 rounded-2xl border border-primary/5">
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-primary" />
+        <div className="grid grid-cols-2 gap-4 mb-8 bg-secondary/20 p-5 rounded-2xl border border-primary/5">
+          {/* Schedule */}
+          <div className="flex items-start gap-2">
+            <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Schedule</span>
-              <span className="text-xs font-semibold text-primary">{course.startDate}{course.endDate ? ` - ${course.endDate}` : ''}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Dates</span>
+              <span className="text-[10px] font-semibold text-primary leading-tight truncate">
+                {course.startDate}
+                {course.endDate ? ` - ${course.endDate}` : ""}
+              </span>
             </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-              <Globe className="w-4 h-4 text-primary" />
+
+          {/* Duration */}
+          <div className="flex items-start gap-2">
+            <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+              <Timer className="w-3.5 h-3.5 text-primary" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Medium & Mode</span>
-              <span className="text-xs font-semibold text-primary">{course.language} • {course.mode}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Duration</span>
+              <span className="text-[10px] font-semibold text-primary leading-tight truncate">
+                {course.duration || catalog?.duration || "N/A"}
+              </span>
+            </div>
+          </div>
+
+          {/* Timings */}
+          {course.timings && (
+            <div className="flex items-start gap-2">
+              <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+                <Clock className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Timings</span>
+                <span className="text-[10px] font-semibold text-primary leading-tight truncate">{course.timings}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Days */}
+          {course.days && (
+            <div className="flex items-start gap-2">
+              <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+                <CalendarDays className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Days</span>
+                <span className="text-[10px] font-semibold text-primary leading-tight truncate">{course.days}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Language */}
+          <div className="flex items-start gap-2">
+            <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+              <Globe className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Language</span>
+              <span className="text-[10px] font-semibold text-primary leading-tight truncate">{course.language}</span>
+            </div>
+          </div>
+
+          {/* Mode */}
+          <div className="flex items-start gap-2">
+            <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
+              {course.mode.toLowerCase() === "online" ? (
+                <Globe className="w-3.5 h-3.5 text-primary" />
+              ) : (
+                <MapPin className="w-3.5 h-3.5 text-primary" />
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Mode</span>
+              <span className="text-[10px] font-semibold text-primary leading-tight truncate">{course.mode}</span>
             </div>
           </div>
         </div>
@@ -76,24 +136,24 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
         <div className="mt-auto flex items-center justify-between pt-6 border-t border-primary/5">
           <div className="flex flex-col">
             <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Course Fee</span>
-            <div className="flex items-baseline gap-1 text-primary">
-              {course.currency === "INR" || !course.currency ? <IndianRupee className="w-4 h-4" /> : <span className="text-xs font-bold">{course.currency} </span>}
+            <div className="flex items-baseline gap-0.5 text-primary">
+              <IndianRupee className="w-3.5 h-3.5" />
               <span className="text-2xl font-bold">{course.fee > 0 ? Number(course.fee).toLocaleString() : "Free"}</span>
             </div>
           </div>
           
           <Button 
-            variant={course.status === "Closed" ? "secondary" : "default"} 
+            variant={isRegistrationOpen ? "default" : "secondary"} 
             size="lg"
             onClick={() => onRegister(course)}
-            disabled={course.status === "Closed"}
+            disabled={!isRegistrationOpen}
             className={`rounded-2xl px-8 font-bold transition-all duration-300 ${
-              course.status === "Closed" 
-                ? "opacity-50 grayscale" 
-                : "bg-primary hover:bg-black hover:scale-105 shadow-lg hover:shadow-primary/20"
+              isRegistrationOpen 
+                ? "bg-primary hover:bg-black hover:scale-105 shadow-lg hover:shadow-primary/20"
+                : "opacity-60 cursor-not-allowed bg-secondary text-muted-foreground"
             }`}
           >
-            {course.status === "Closed" ? "Closed" : course.registrationFormUrl ? "Register Now" : "Register"}
+            {isRegistrationOpen ? "Register Now" : "Coming Soon"}
           </Button>
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import type { Course } from "@/types";
+import { isCourseLive, isCourseUpcoming } from "@/lib/utils";
 
 interface CoursesProps {
   onRegister: (course: Course) => void;
@@ -20,13 +21,16 @@ interface CoursesProps {
 const Courses = ({ onRegister }: CoursesProps) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [activeTab, setActiveTab] = useState("catalog");
+  const [activeTab, setActiveTab] = useState("live");
 
   const { data: catalogData, isLoading: catalogLoading } = useCourseCatalog();
-  const { data: upcomingData, isLoading: upcomingLoading } = useCourses("Upcoming");
+  const { data: coursesData, isLoading: coursesLoading } = useCourses();
 
   const catalogCourses = catalogData?.data || [];
-  const upcomingCourses = upcomingData?.data || [];
+  const allCourses = coursesData?.data || [];
+
+  const liveCourses = allCourses.filter(course => isCourseLive(course.startDate, course.endDate));
+  const upcomingCourses = allCourses.filter(course => isCourseUpcoming(course.startDate));
 
   return (
     <section id="courses" className="section-padding bg-card" ref={ref}>
@@ -81,43 +85,50 @@ const Courses = ({ onRegister }: CoursesProps) => {
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10 bg-secondary h-12">
+          <TabsList className="grid w-full max-w-xl mx-auto grid-cols-3 mb-10 bg-secondary h-12">
             <TabsTrigger 
-              value="catalog" 
+              value="live" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
             >
-              All Courses
+              Live Courses
             </TabsTrigger>
             <TabsTrigger 
               value="upcoming"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
             >
-              Upcoming Batches
+              Upcoming Courses
+            </TabsTrigger>
+            <TabsTrigger 
+              value="catalog" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
+            >
+              Course Catalog
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="catalog">
-            {catalogLoading ? (
-              <div className="text-center py-12">Loading course catalog...</div>
-            ) : catalogCourses.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                No courses in the catalog at the moment.
+          <TabsContent value="live">
+            {coursesLoading ? (
+              <div className="text-center py-12">Loading live courses...</div>
+            ) : liveCourses.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
+                No active live courses at the moment. Please check back soon or browse our upcoming courses.
               </div>
             ) : (
               <Carousel
                 opts={{
                   align: "start",
-                  loop: true,
+                  loop: liveCourses.length > 2,
                 }}
-                className="w-full relative px-12"
+                className="w-full max-w-5xl mx-auto relative px-12"
               >
                 <CarouselContent className="-ml-4">
-                  {catalogCourses.map((catalog, index) => (
-                    <CarouselItem key={catalog.courseId} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  {liveCourses.map((course, index) => (
+                    <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
                       <div className="h-full py-4">
-                        <CourseCatalogCard
-                          catalog={catalog}
+                        <CourseCard
+                          course={course}
                           index={index}
+                          onRegister={onRegister}
                         />
                       </div>
                     </CarouselItem>
@@ -132,17 +143,17 @@ const Courses = ({ onRegister }: CoursesProps) => {
           </TabsContent>
 
           <TabsContent value="upcoming">
-            {upcomingLoading ? (
+            {coursesLoading ? (
               <div className="text-center py-12">Loading upcoming courses...</div>
             ) : upcomingCourses.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
                 No upcoming batches at the moment.
               </div>
             ) : (
               <Carousel
                 opts={{
                   align: "start",
-                  loop: true,
+                  loop: upcomingCourses.length > 2,
                 }}
                 className="w-full max-w-5xl mx-auto relative px-12"
               >
@@ -154,6 +165,41 @@ const Courses = ({ onRegister }: CoursesProps) => {
                           course={course}
                           index={index}
                           onRegister={onRegister}
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                </div>
+              </Carousel>
+            )}
+          </TabsContent>
+
+          <TabsContent value="catalog">
+            {catalogLoading ? (
+              <div className="text-center py-12">Loading course catalog...</div>
+            ) : catalogCourses.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
+                No courses in the catalog at the moment.
+              </div>
+            ) : (
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: catalogCourses.length > 3,
+                }}
+                className="w-full relative px-12"
+              >
+                <CarouselContent className="-ml-4">
+                  {catalogCourses.map((catalog, index) => (
+                    <CarouselItem key={catalog.courseId} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="h-full py-4">
+                        <CourseCatalogCard
+                          catalog={catalog}
+                          index={index}
                         />
                       </div>
                     </CarouselItem>

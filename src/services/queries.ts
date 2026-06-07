@@ -9,10 +9,10 @@ export const useCourseCatalog = () => {
   });
 };
 
-export const useCourses = (status?: "Upcoming" | "Closed") => {
+export const useCourses = () => {
   return useQuery({
-    queryKey: ["courses", status],
-    queryFn: () => apiClient.getCourses(status),
+    queryKey: ["courses"],
+    queryFn: () => apiClient.getCourses(),
   });
 };
 
