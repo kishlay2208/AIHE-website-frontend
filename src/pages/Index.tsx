@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import OurInspiration from "@/components/OurInspiration";
+import Testimonials from "@/components/Testimonials";
+import ResultsSection from "@/components/ResultsSection";
 import SystematicStudy from "@/components/SystematicStudy";
 import Courses from "@/components/Courses";
 import Instructors from "@/components/Instructors";
@@ -45,6 +47,8 @@ const Index = () => {
         <Courses onRegister={handleRegister} />
         <Instructors />
         <OurInspiration />
+        <Testimonials />
+        <ResultsSection />
         <Contact />
       </main>
       

@@ -8,6 +8,8 @@ const Footer = () => {
     { name: "Our Inspiration", href: "#inspiration" },
     { name: "Courses", href: "#courses" },
     { name: "Our Faculty", href: "#instructors" },
+    { name: "Testimonials", href: "#testimonials" },
+    { name: "Results", href: "#results" },
     { name: "Contact", href: "#contact" },
   ];
 

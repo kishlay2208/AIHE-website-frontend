@@ -40,3 +40,21 @@ export const useInstructor = (id: number) => {
     enabled: !!id,
   });
 };
+
+// Testimonial queries
+export const useTestimonials = () => {
+  return useQuery({
+    queryKey: ["testimonials"],
+    queryFn: () => apiClient.getTestimonials(),
+  });
+};
+
+// Result queries
+export const useResults = () => {
+  return useQuery({
+    queryKey: ["results"],
+    queryFn: () => apiClient.getResults(),
+  });
+};
+
+

@@ -165,3 +165,27 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalPages: number;
 }
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  place: string;
+  batchAndYear: string;
+  comments: string;
+}
+
+export interface ResultRecord {
+  id: string;
+  name: string;
+  mobile: string;
+  courseId: string;
+  courseName: string;
+  cba: string;
+  oba: string;
+  sloka: string;
+  total: string;
+  status: string;
+  remarks: string;
+}
+
+

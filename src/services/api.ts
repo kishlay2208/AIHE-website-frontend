@@ -5,6 +5,8 @@ import type {
   CourseCatalog,
   Instructor,
   ApiResponse,
+  Testimonial,
+  ResultRecord,
 } from "@/types";
 
 class ApiClient {
@@ -21,11 +23,15 @@ class ApiClient {
     instructors: Instructor[] | null;
     courses: Course[] | null;
     catalog: CourseCatalog[] | null;
+    testimonials: Testimonial[] | null;
+    results: ResultRecord[] | null;
     lastFetched: number;
   } = {
     instructors: null,
     courses: null,
     catalog: null,
+    testimonials: null,
+    results: null,
     lastFetched: 0
   };
 
@@ -64,7 +70,9 @@ class ApiClient {
     const response = await this.fetchFromGas<{
       instructors: Instructor[],
       courses: Course[],
-      catalog: CourseCatalog[]
+      catalog: CourseCatalog[],
+      testimonials: Testimonial[],
+      results: ResultRecord[]
     }>("getAllData");
 
     if (response.success && response.data) {
@@ -73,11 +81,15 @@ class ApiClient {
       const instructors = data.instructors || data.Instructors || [];
       const courses = data.courses || data.Courses || [];
       const catalog = data.catalog || data.Catalog || [];
+      const testimonials = data.testimonials || data.Testimonials || data.testimonial || data.Testimonial || [];
+      const results = data.results || data.Results || data.result || data.Result || [];
       
       console.log("Data fetched successfully:", { 
         instructorsCount: instructors.length, 
         coursesCount: courses.length, 
-        catalogCount: catalog.length 
+        catalogCount: catalog.length,
+        testimonialsCount: testimonials.length,
+        resultsCount: results.length
       });
 
       this.cache = {
@@ -115,6 +127,28 @@ class ApiClient {
           thumbnail: transformDriveUrl(batch.thumbnail || batch.Thumbnail || batch.course_thumbnail_image || batch.image || batch.Image || batch.courseThumbnailImage) || "",
           registrationFormUrl: batch.registrationFormUrl || batch.registration_form_url || batch.RegistrationFormUrl || batch.registrationformurl || ""
         })),
+        testimonials: testimonials.map((t: any) => ({
+          ...t,
+          id: String(t.id || t.ID || t.testimonialId || t.testimonial_id || t.testimonialId || ""),
+          name: t.name || t.Name || "",
+          place: t.place || t.Place || t.location || t.Location || "",
+          batchAndYear: t.batchAndYear || t.batch_and_year || t["Batch and year"] || t["batch and year"] || t.batchYear || t.batch || t.Batch || "",
+          comments: t.comments || t.Comments || t.comment || t.Comment || t.text || t.Text || ""
+        })),
+        results: results.map((r: any) => ({
+          ...r,
+          id: String(r.id || r.ID || ""),
+          name: r.name || r.Name || "",
+          mobile: String(r.mobile || r.Mobile || r.phone || r.Phone || ""),
+          courseId: r.courseId || r.course_id || r.CourseID || r.courseid || "",
+          courseName: r.courseName || r.course_name || r.CourseName || r.course || r.Course || "",
+          cba: String(r.cba !== undefined ? r.cba : r.CBA || "N/A"),
+          oba: String(r.oba !== undefined ? r.oba : r.OBA || "N/A"),
+          sloka: String(r.sloka !== undefined ? r.sloka : r.Sloka || "N/A"),
+          total: String(r.total !== undefined ? r.total : r.Total || "N/A"),
+          status: r.status || r.Status || "N/A",
+          remarks: r.remarks || r.Remarks || r.remark || r.Remark || ""
+        })),
         lastFetched: now
       };
       return true;
@@ -124,7 +158,7 @@ class ApiClient {
     
     // Safety fallback: if getAllData fails, ensure we don't crash but mark as not fetched
     if (this.cache.lastFetched === 0) {
-      this.cache = { ...this.cache, instructors: [], courses: [], catalog: [], lastFetched: now };
+      this.cache = { ...this.cache, instructors: [], courses: [], catalog: [], testimonials: [], results: [], lastFetched: now };
     }
     return false;
   }
@@ -186,6 +220,28 @@ class ApiClient {
     return {
       data: instructor as Instructor,
       success: !!instructor
+    };
+  }
+
+  // Testimonial endpoints
+  async getTestimonials(): Promise<ApiResponse<Testimonial[]>> {
+    if (!this.cache.testimonials) {
+      await this.getAllData();
+    }
+    return {
+      data: this.cache.testimonials || [],
+      success: !!this.cache.testimonials
+    };
+  }
+
+  // Result endpoints
+  async getResults(): Promise<ApiResponse<ResultRecord[]>> {
+    if (!this.cache.results) {
+      await this.getAllData();
+    }
+    return {
+      data: this.cache.results || [],
+      success: !!this.cache.results
     };
   }
 }
