@@ -39,15 +39,15 @@ const CourseCatalogCard = ({ catalog, index }: CourseCatalogCardProps) => {
         </p>
 
         <div className="mt-auto space-y-4 pt-6 border-t border-primary/5">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-4">
             {/* Duration */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4 text-primary" />
               </div>
               <div className="min-w-0">
-                <span className="block text-[8px] uppercase tracking-tighter text-muted-foreground font-bold truncate">Duration</span>
-                <span className="text-xs font-semibold text-primary block truncate">{catalog.duration}</span>
+                <span className="block text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Duration</span>
+                <span className="text-xs font-semibold text-primary block">{catalog.duration}</span>
               </div>
             </div>
 
@@ -61,20 +61,20 @@ const CourseCatalogCard = ({ catalog, index }: CourseCatalogCardProps) => {
                 )}
               </div>
               <div className="min-w-0">
-                <span className="block text-[8px] uppercase tracking-tighter text-muted-foreground font-bold truncate">Mode</span>
-                <span className="text-xs font-semibold text-primary block truncate">{catalog.mode || "Online"}</span>
+                <span className="block text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Mode</span>
+                <span className="text-xs font-semibold text-primary block">{catalog.mode || "Online"}</span>
               </div>
             </div>
-            
-            {/* Level */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                <GraduationCap className="w-4 h-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <span className="block text-[8px] uppercase tracking-tighter text-muted-foreground font-bold truncate">Level</span>
-                <span className="text-xs font-semibold text-primary block truncate">{catalog.enrollmentCriteria}</span>
-              </div>
+          </div>
+          
+          {/* Level / Criteria */}
+          <div className="flex items-start gap-2 pt-2 border-t border-primary/5">
+            <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0 mt-0.5">
+              <GraduationCap className="w-4 h-4 text-primary" />
+            </div>
+            <div className="min-w-0 flex-grow">
+              <span className="block text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Eligibility / Criteria</span>
+              <span className="text-xs font-semibold text-primary block leading-relaxed">{catalog.enrollmentCriteria}</span>
             </div>
           </div>
 

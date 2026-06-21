@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTestimonials } from "@/services/queries";
 import {
@@ -10,8 +10,6 @@ import {
 } from "@/components/ui/carousel";
 
 const Testimonials = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
   const { data: testimonialsData, isLoading } = useTestimonials();
   const testimonials = testimonialsData?.data || [];
 
@@ -53,7 +51,6 @@ const Testimonials = () => {
     <section
       id="testimonials"
       className="py-20 md:py-28 bg-[#2C1E4A] text-light-bg overflow-hidden relative"
-      ref={ref}
     >
       {/* Solid gradient overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#25183E]/80 via-[#2C1E4A]/30 to-[#25183E]/80 pointer-events-none" />
@@ -62,7 +59,8 @@ const Testimonials = () => {
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-20px" }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
@@ -105,30 +103,45 @@ const Testimonials = () => {
                   <CarouselItem key={t.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
-                      animate={isInView ? { opacity: 1, y: 0 } : {}}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                       className="bg-white text-primary rounded-[2rem] p-8 md:p-10 shadow-xl border border-primary/5 flex flex-col h-full relative overflow-hidden group min-h-[320px] justify-between"
                     >
                       {/* Quotation Icon Graphic */}
                       <div className="text-[#2C1E4A]/5 text-7xl md:text-8xl font-serif leading-none select-none absolute top-4 left-6 pointer-events-none group-hover:text-orange/10 transition-colors duration-500">
-                        &ldquo;&ldquo;
+                        &ldquo;
                       </div>
 
                       {/* Comment text */}
-                      <div className="relative z-10 flex-grow flex items-center mb-6 pt-6">
-                        <p className="font-sans text-sm sm:text-base leading-relaxed text-[#4A3E65]">
-                          {t.comments}
+                      <div className="relative z-10 flex-grow flex items-center mb-6 pt-8">
+                        <p className="font-serif italic text-sm sm:text-base md:text-lg leading-relaxed text-[#4A3E65]">
+                          &ldquo;{t.comments}&rdquo;
                         </p>
                       </div>
 
                       {/* Author Info */}
-                      <div className="relative z-10 border-t border-primary/5 pt-4">
-                        <h4 className="font-sans font-bold text-sm sm:text-base text-[#2C1E4A] leading-tight">
-                          — {t.name}
-                        </h4>
-                        <p className="font-sans text-xs font-semibold text-[#8B7E9F] mt-1 leading-normal">
-                          {t.place}{t.place && t.batchAndYear ? " • " : ""}{t.batchAndYear}
-                        </p>
+                      <div className="relative z-10 border-t border-primary/5 pt-5 flex items-center gap-4">
+                        <img 
+                          src={t.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(t.name)}`} 
+                          alt={t.name}
+                          className="w-12 h-12 rounded-full object-cover border border-[#2C1E4A]/10 shrink-0 shadow-sm"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(t.name)}`;
+                          }}
+                        />
+                        <div className="text-left">
+                          <h4 className="font-sans font-bold text-sm sm:text-base text-[#2C1E4A] leading-tight">
+                            {t.name}
+                          </h4>
+                          <p className="font-sans text-xs text-[#8B7E9F] mt-1 leading-normal">
+                            <span className="font-semibold text-orange-light">{t.title}</span>
+                            {t.place && (
+                              <span className="text-[#8B7E9F]/60"> • {t.place}</span>
+                            )}
+                          </p>
+                        </div>
                       </div>
                     </motion.div>
                   </CarouselItem>

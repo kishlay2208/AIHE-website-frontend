@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Calendar, Globe, IndianRupee, Clock, CalendarDays, Timer, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/types";
+import { formatDate } from "@/lib/utils";
 
 interface CourseCardProps {
   course: Course;
@@ -61,8 +62,8 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
             <div className="flex flex-col min-w-0">
               <span className="text-[8px] uppercase tracking-wider text-muted-foreground font-bold">Dates</span>
               <span className="text-[10px] font-semibold text-primary leading-tight truncate">
-                {course.startDate}
-                {course.endDate ? ` - ${course.endDate}` : ""}
+                {formatDate(course.startDate)}
+                {course.endDate ? ` - ${formatDate(course.endDate)}` : ""}
               </span>
             </div>
           </div>

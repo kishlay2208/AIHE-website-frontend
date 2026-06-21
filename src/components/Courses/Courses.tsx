@@ -1,9 +1,8 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useCourses, useCourseCatalog } from "@/services/queries";
 import CourseCard from "./CourseCard";
 import CourseCatalogCard from "./CourseCatalogCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Carousel,
   CarouselContent,
@@ -21,7 +20,6 @@ interface CoursesProps {
 const Courses = ({ onRegister }: CoursesProps) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [activeTab, setActiveTab] = useState("live");
 
   const { data: catalogData, isLoading: catalogLoading } = useCourseCatalog();
   const { data: coursesData, isLoading: coursesLoading } = useCourses();
@@ -29,17 +27,27 @@ const Courses = ({ onRegister }: CoursesProps) => {
   const catalogCourses = catalogData?.data || [];
   const allCourses = coursesData?.data || [];
 
-  const liveCourses = allCourses.filter(course => isCourseLive(course.startDate, course.endDate));
-  const upcomingCourses = allCourses.filter(course => isCourseUpcoming(course.startDate));
+  const liveCourses = allCourses.filter(course => {
+    const status = String(course.status || "").toLowerCase().trim();
+    if (status === "ongoing" || status === "live" || status === "active" || status === "running") return true;
+    if (status === "upcoming" || status === "closed") return false;
+    return isCourseLive(course.startDate, course.endDate);
+  });
+  const upcomingCourses = allCourses.filter(course => {
+    const status = String(course.status || "").toLowerCase().trim();
+    if (status === "upcoming") return true;
+    if (status === "ongoing" || status === "live" || status === "active" || status === "closed") return false;
+    return isCourseUpcoming(course.startDate);
+  });
 
   return (
     <section id="courses" className="section-padding bg-card" ref={ref}>
-      <div className="container mx-auto">
+      <div className="container mx-auto space-y-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-6"
         >
           <span className="text-primary font-medium tracking-widest uppercase text-sm">
             AIHE Offerings
@@ -50,169 +58,129 @@ const Courses = ({ onRegister }: CoursesProps) => {
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
             Broaden your horizons with our systematic study of Vedic wisdom.
           </p>
-
-          {/* Inspirational Verse */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-12 mb-10 max-w-4xl mx-auto"
-          >
-            <div className="bg-[#faf8f3] rounded-3xl p-8 md:p-14 border-2 border-primary/10 relative shadow-sm overflow-hidden group">
-              {/* Decorative corners */}
-              <div className="absolute top-0 left-0 w-20 h-20 border-t-4 border-l-4 border-primary/5 rounded-tl-3xl transition-all duration-500 group-hover:w-24 group-hover:h-24 group-hover:border-primary/20" />
-              <div className="absolute bottom-0 right-0 w-20 h-20 border-b-4 border-r-4 border-primary/5 rounded-br-3xl transition-all duration-500 group-hover:w-24 group-hover:h-24 group-hover:border-primary/20" />
-              
-              <p className="font-serif text-2xl md:text-3xl text-primary font-bold mb-4 text-center leading-relaxed drop-shadow-sm">
-                तद्विद्धि प्रणिपातेन परिप्रश्नेन सेवया ।
-                <br />
-                उपदेक्ष्यन्ति ते ज्ञानं ज्ञानिनस्तत्त्वदर्शिनः ॥ ३४ ॥
-              </p>
-              <p className="font-serif italic text-foreground/50 text-sm sm:text-base md:text-lg mb-6 text-center whitespace-pre-line leading-relaxed">
-                tad viddhi praṇipātena paripraśnena sevayā
-                <br />
-                upadekṣyanti te jñānaṁ jñāninas tattva-darśinaḥ
-              </p>
-              <div className="h-px w-24 bg-primary/10 mx-auto mb-6" />
-              <p className="text-muted-foreground text-base md:text-lg text-center max-w-2xl mx-auto italic leading-relaxed">
-                &ldquo;Just try to learn the truth by approaching a spiritual master. Inquire from him submissively and render service unto him.&rdquo;
-                <span className="block mt-4 font-sans font-bold text-primary not-italic tracking-[0.2em] text-[10px] sm:text-xs uppercase">
-                  &mdash; Bhagavad-gītā 4.34
-                </span>
-              </p>
-            </div>
-          </motion.div>
         </motion.div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-xl mx-auto grid-cols-3 mb-10 bg-secondary h-12">
-            <TabsTrigger 
-              value="live" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
+        {/* 1. Upcoming Courses */}
+        <div className="space-y-6">
+          <h3 className="font-serif text-2xl md:text-3xl font-bold text-primary text-center">
+            Upcoming Courses
+          </h3>
+          <div className="h-0.5 w-16 bg-primary/10 mx-auto mb-8" />
+          {coursesLoading ? (
+            <div className="text-center py-12">Loading upcoming courses...</div>
+          ) : upcomingCourses.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
+              No upcoming batches at the moment.
+            </div>
+          ) : (
+            <Carousel
+              opts={{
+                align: "start",
+                loop: upcomingCourses.length > 2,
+              }}
+              className="w-full max-w-5xl mx-auto relative px-12"
             >
-              Live Courses
-            </TabsTrigger>
-            <TabsTrigger 
-              value="upcoming"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
+              <CarouselContent className="-ml-4">
+                {upcomingCourses.map((course, index) => (
+                  <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
+                    <div className="h-full py-4">
+                      <CourseCard
+                        course={course}
+                        index={index}
+                        onRegister={onRegister}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:block">
+                <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+              </div>
+            </Carousel>
+          )}
+        </div>
+
+        {/* 2. Live Courses */}
+        <div className="space-y-6">
+          <h3 className="font-serif text-2xl md:text-3xl font-bold text-primary text-center">
+            Live Courses
+          </h3>
+          <div className="h-0.5 w-16 bg-primary/10 mx-auto mb-8" />
+          {coursesLoading ? (
+            <div className="text-center py-12">Loading live courses...</div>
+          ) : liveCourses.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
+              No active live courses at the moment. Please check back soon or browse our upcoming courses.
+            </div>
+          ) : (
+            <Carousel
+              opts={{
+                align: "start",
+                loop: liveCourses.length > 2,
+              }}
+              className="w-full max-w-5xl mx-auto relative px-12"
             >
-              Upcoming Courses
-            </TabsTrigger>
-            <TabsTrigger 
-              value="catalog" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg font-medium"
+              <CarouselContent className="-ml-4">
+                {liveCourses.map((course, index) => (
+                  <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
+                    <div className="h-full py-4">
+                      <CourseCard
+                        course={course}
+                        index={index}
+                        onRegister={onRegister}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:block">
+                <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+              </div>
+            </Carousel>
+          )}
+        </div>
+
+        {/* 3. Course Catalog */}
+        <div className="space-y-6">
+          <h3 className="font-serif text-2xl md:text-3xl font-bold text-primary text-center">
+            Course Catalog
+          </h3>
+          <div className="h-0.5 w-16 bg-primary/10 mx-auto mb-8" />
+          {catalogLoading ? (
+            <div className="text-center py-12">Loading course catalog...</div>
+          ) : catalogCourses.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
+              No courses in the catalog at the moment.
+            </div>
+          ) : (
+            <Carousel
+              opts={{
+                align: "start",
+                loop: catalogCourses.length > 2,
+              }}
+              className="w-full max-w-5xl mx-auto relative px-12"
             >
-              Course Catalog
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="live">
-            {coursesLoading ? (
-              <div className="text-center py-12">Loading live courses...</div>
-            ) : liveCourses.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
-                No active live courses at the moment. Please check back soon or browse our upcoming courses.
+              <CarouselContent className="-ml-4">
+                {catalogCourses.map((catalog, index) => (
+                  <CarouselItem key={catalog.courseId} className="pl-4 md:basis-1/2 lg:basis-1/2">
+                    <div className="h-full py-4">
+                      <CourseCatalogCard
+                        catalog={catalog}
+                        index={index}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:block">
+                <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
+                <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
               </div>
-            ) : (
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: liveCourses.length > 2,
-                }}
-                className="w-full max-w-5xl mx-auto relative px-12"
-              >
-                <CarouselContent className="-ml-4">
-                  {liveCourses.map((course, index) => (
-                    <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
-                      <div className="h-full py-4">
-                        <CourseCard
-                          course={course}
-                          index={index}
-                          onRegister={onRegister}
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="hidden md:block">
-                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                </div>
-              </Carousel>
-            )}
-          </TabsContent>
-
-          <TabsContent value="upcoming">
-            {coursesLoading ? (
-              <div className="text-center py-12">Loading upcoming courses...</div>
-            ) : upcomingCourses.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
-                No upcoming batches at the moment.
-              </div>
-            ) : (
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: upcomingCourses.length > 2,
-                }}
-                className="w-full max-w-5xl mx-auto relative px-12"
-              >
-                <CarouselContent className="-ml-4">
-                  {upcomingCourses.map((course, index) => (
-                    <CarouselItem key={course.batchId} className="pl-4 md:basis-1/2">
-                      <div className="h-full py-4">
-                        <CourseCard
-                          course={course}
-                          index={index}
-                          onRegister={onRegister}
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="hidden md:block">
-                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                </div>
-              </Carousel>
-            )}
-          </TabsContent>
-
-          <TabsContent value="catalog">
-            {catalogLoading ? (
-              <div className="text-center py-12">Loading course catalog...</div>
-            ) : catalogCourses.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground bg-white rounded-3xl p-8 border border-primary/5 shadow-sm max-w-lg mx-auto">
-                No courses in the catalog at the moment.
-              </div>
-            ) : (
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: catalogCourses.length > 3,
-                }}
-                className="w-full relative px-12"
-              >
-                <CarouselContent className="-ml-4">
-                  {catalogCourses.map((catalog, index) => (
-                    <CarouselItem key={catalog.courseId} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                      <div className="h-full py-4">
-                        <CourseCatalogCard
-                          catalog={catalog}
-                          index={index}
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="hidden md:block">
-                  <CarouselPrevious className="-left-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                  <CarouselNext className="-right-4 bg-primary text-primary-foreground hover:bg-primary/90" />
-                </div>
-              </Carousel>
-            )}
-          </TabsContent>
-        </Tabs>
+            </Carousel>
+          )}
+        </div>
       </div>
     </section>
   );

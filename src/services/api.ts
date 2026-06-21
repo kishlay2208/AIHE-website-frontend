@@ -11,6 +11,7 @@ import type {
 
 class ApiClient {
   private baseURL: string;
+  private activeFetchPromise: Promise<boolean> | null = null;
 
   constructor() {
     this.baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -66,101 +67,113 @@ class ApiClient {
       return true;
     }
 
-    console.log("Fetching all data from GAS...");
-    const response = await this.fetchFromGas<{
-      instructors: Instructor[],
-      courses: Course[],
-      catalog: CourseCatalog[],
-      testimonials: Testimonial[],
-      results: ResultRecord[]
-    }>("getAllData");
+    if (this.activeFetchPromise) {
+      return this.activeFetchPromise;
+    }
 
-    if (response.success && response.data) {
-      // Normalize data keys just in case (e.g. Instructors vs instructors)
-      const data = response.data as any;
-      const instructors = data.instructors || data.Instructors || [];
-      const courses = data.courses || data.Courses || [];
-      const catalog = data.catalog || data.Catalog || [];
-      const testimonials = data.testimonials || data.Testimonials || data.testimonial || data.Testimonial || [];
-      const results = data.results || data.Results || data.result || data.Result || [];
+    this.activeFetchPromise = (async () => {
+      console.log("Fetching all data from GAS...");
+      const response = await this.fetchFromGas<{
+        instructors: Instructor[],
+        courses: Course[],
+        catalog: CourseCatalog[],
+        testimonials: Testimonial[],
+        results: ResultRecord[]
+      }>("getAllData");
+
+      if (response.success && response.data) {
+        // Normalize data keys just in case (e.g. Instructors vs instructors)
+        const data = response.data as any;
+        const instructors = data.instructors || data.Instructors || [];
+        const courses = data.courses || data.Courses || [];
+        const catalog = data.catalog || data.Catalog || [];
+        const testimonials = data.testimonials || data.Testimonials || data.testimonial || data.Testimonial || [];
+        const results = data.results || data.Results || data.result || data.Result || [];
+        
+        console.log("Data fetched successfully:", { 
+          instructorsCount: instructors.length, 
+          coursesCount: courses.length, 
+          catalogCount: catalog.length,
+          testimonialsCount: testimonials.length,
+          resultsCount: results.length
+        });
+
+        this.cache = {
+          instructors: instructors.map((i: any) => ({
+            ...i,
+            id: i.id || i.ID || i.instructor_id || i.InstructorID,
+            name: i.name || i.Name || i.FullName || i.Full_Name,
+            title: i.title || i.Title || i.Designation,
+            image: transformDriveUrl(i.image || i.Image || i.image_url || i.Photo || i.Picture || i.ProfilePhoto) || "",
+            teaches: typeof i.teaches === 'string' 
+              ? i.teaches.split(',').map((s: string) => s.trim())
+              : Array.isArray(i.teaches) ? i.teaches : []
+          })),
+          catalog: catalog.map((c: any) => ({
+            ...c,
+            courseId: String(c.courseId ?? c.course_id ?? c.CourseID ?? c.courseid ?? ""),
+            name: String(c.name ?? c.Name ?? c.title ?? c.Title ?? c.CourseName ?? ""),
+            mode: c.mode || c.Mode || "Online",
+            thumbnail: transformDriveUrl(c.thumbnail || c.Thumbnail || c.image || c.Image || c.Photo || c.Picture) || ""
+          })),
+          courses: courses.map((batch: any) => ({
+            ...batch,
+            batchId: String(batch.batchId ?? batch.batch_id ?? batch.BatchID ?? batch.id ?? batch.ID ?? `batch-${batch.courseId ?? batch.course_id ?? batch.courseid}-${batch.startDate ?? batch.start_date ?? batch.startdate}`),
+            courseId: String(batch.courseId ?? batch.course_id ?? batch.CourseID ?? batch.courseid ?? ""),
+            startDate: batch.startDate || batch.start_date || batch.StartDate || batch.startdate || "",
+            endDate: batch.endDate || batch.end_date || batch.EndDate || batch.enddate || "",
+            instructorId: batch.instructorId || batch.instructor_id || batch.InstructorID || batch.instructorid || "",
+            fee: Number(batch.fee || batch.Fee || 0),
+            currency: "INR",
+            language: batch.language || batch.Language || "Hindi",
+            mode: batch.mode || batch.Mode || "Online",
+            timings: batch.timings || batch.Timings || batch.timing || batch.Timing || "",
+            days: batch.days || batch.Days || "",
+            duration: batch.duration || batch.Duration || "",
+            thumbnail: transformDriveUrl(batch.thumbnail || batch.Thumbnail || batch.course_thumbnail_image || batch.image || batch.Image || batch.courseThumbnailImage) || "",
+            registrationFormUrl: batch.registrationFormUrl || batch.registration_form_url || batch.RegistrationFormUrl || batch.registrationformurl || ""
+          })),
+          testimonials: testimonials.map((t: any) => ({
+            ...t,
+            id: String(t.id || t.ID || t.testimonialId || t.testimonial_id || t.testimonialId || ""),
+            name: t.name || t.Name || "",
+            place: t.place || t.Place || t.location || t.Location || "",
+            title: t.title || t.Title || t.batchAndYear || t.batch_and_year || t["Batch and year"] || t["batch and year"] || t.batchYear || t.batch || t.Batch || "",
+            photo: transformDriveUrl(t.photo || t.Photo || t.image || t.Image || t.avatar || t.Avatar || "") || "",
+            comments: t.comments || t.Comments || t.comment || t.Comment || t.text || t.Text || "",
+            batchAndYear: t.batchAndYear || t.batch_and_year || t["Batch and year"] || t["batch and year"] || t.batchYear || t.batch || t.Batch || ""
+          })),
+          results: results.map((r: any) => ({
+            ...r,
+            id: String(r.id || r.ID || ""),
+            name: String(r.name ?? r.Name ?? ""),
+            mobile: String(r.mobile ?? r.Mobile ?? r.phone ?? r.Phone ?? ""),
+            courseId: String(r.courseId ?? r.course_id ?? r.CourseID ?? r.courseid ?? ""),
+            courseName: String(r.courseName ?? r.course_name ?? r.CourseName ?? r.course ?? r.Course ?? ""),
+            cba: String(r.cba !== undefined ? r.cba : r.CBA || "N/A"),
+            oba: String(r.oba !== undefined ? r.oba : r.OBA || "N/A"),
+            sloka: String(r.sloka !== undefined ? r.sloka : r.Sloka || "N/A"),
+            total: String(r.total !== undefined ? r.total : r.Total || "N/A"),
+            status: r.status || r.Status || "N/A",
+            remarks: r.remarks || r.Remarks || r.remark || r.Remark || ""
+          })),
+          lastFetched: Date.now()
+        };
+        this.activeFetchPromise = null;
+        return true;
+      }
       
-      console.log("Data fetched successfully:", { 
-        instructorsCount: instructors.length, 
-        coursesCount: courses.length, 
-        catalogCount: catalog.length,
-        testimonialsCount: testimonials.length,
-        resultsCount: results.length
-      });
+      console.error("Failed to fetch data from GAS:", response.message);
+      
+      // Safety fallback: if getAllData fails, ensure we don't crash but mark as not fetched
+      if (this.cache.lastFetched === 0) {
+        this.cache = { ...this.cache, instructors: [], courses: [], catalog: [], testimonials: [], results: [], lastFetched: Date.now() };
+      }
+      this.activeFetchPromise = null;
+      return false;
+    })();
 
-      this.cache = {
-        instructors: instructors.map((i: any) => ({
-          ...i,
-          id: i.id || i.ID || i.instructor_id || i.InstructorID,
-          name: i.name || i.Name || i.FullName || i.Full_Name,
-          title: i.title || i.Title || i.Designation,
-          image: transformDriveUrl(i.image || i.Image || i.image_url || i.Photo || i.Picture || i.ProfilePhoto) || "",
-          teaches: typeof i.teaches === 'string' 
-            ? i.teaches.split(',').map((s: string) => s.trim())
-            : Array.isArray(i.teaches) ? i.teaches : []
-        })),
-        catalog: catalog.map((c: any) => ({
-          ...c,
-          courseId: c.courseId || c.course_id || c.CourseID || c.courseid || "",
-          name: c.name || c.Name || c.title || c.Title || c.CourseName || "",
-          mode: c.mode || c.Mode || "Online",
-          thumbnail: transformDriveUrl(c.thumbnail || c.Thumbnail || c.image || c.Image || c.Photo || c.Picture) || ""
-        })),
-        courses: courses.map((batch: any) => ({
-          ...batch,
-          batchId: batch.batchId || batch.batch_id || batch.BatchID || batch.id || batch.ID || `batch-${batch.courseId || batch.course_id || batch.courseid}-${batch.startDate || batch.start_date || batch.startdate}`,
-          courseId: batch.courseId || batch.course_id || batch.CourseID || batch.courseid || "",
-          startDate: batch.startDate || batch.start_date || batch.StartDate || batch.startdate || "",
-          endDate: batch.endDate || batch.end_date || batch.EndDate || batch.enddate || "",
-          instructorId: batch.instructorId || batch.instructor_id || batch.InstructorID || batch.instructorid || "",
-          fee: Number(batch.fee || batch.Fee || 0),
-          currency: "INR",
-          language: batch.language || batch.Language || "Hindi",
-          mode: batch.mode || batch.Mode || "Online",
-          timings: batch.timings || batch.Timings || batch.timing || batch.Timing || "",
-          days: batch.days || batch.Days || "",
-          duration: batch.duration || batch.Duration || "",
-          thumbnail: transformDriveUrl(batch.thumbnail || batch.Thumbnail || batch.course_thumbnail_image || batch.image || batch.Image || batch.courseThumbnailImage) || "",
-          registrationFormUrl: batch.registrationFormUrl || batch.registration_form_url || batch.RegistrationFormUrl || batch.registrationformurl || ""
-        })),
-        testimonials: testimonials.map((t: any) => ({
-          ...t,
-          id: String(t.id || t.ID || t.testimonialId || t.testimonial_id || t.testimonialId || ""),
-          name: t.name || t.Name || "",
-          place: t.place || t.Place || t.location || t.Location || "",
-          batchAndYear: t.batchAndYear || t.batch_and_year || t["Batch and year"] || t["batch and year"] || t.batchYear || t.batch || t.Batch || "",
-          comments: t.comments || t.Comments || t.comment || t.Comment || t.text || t.Text || ""
-        })),
-        results: results.map((r: any) => ({
-          ...r,
-          id: String(r.id || r.ID || ""),
-          name: r.name || r.Name || "",
-          mobile: String(r.mobile || r.Mobile || r.phone || r.Phone || ""),
-          courseId: r.courseId || r.course_id || r.CourseID || r.courseid || "",
-          courseName: r.courseName || r.course_name || r.CourseName || r.course || r.Course || "",
-          cba: String(r.cba !== undefined ? r.cba : r.CBA || "N/A"),
-          oba: String(r.oba !== undefined ? r.oba : r.OBA || "N/A"),
-          sloka: String(r.sloka !== undefined ? r.sloka : r.Sloka || "N/A"),
-          total: String(r.total !== undefined ? r.total : r.Total || "N/A"),
-          status: r.status || r.Status || "N/A",
-          remarks: r.remarks || r.Remarks || r.remark || r.Remark || ""
-        })),
-        lastFetched: now
-      };
-      return true;
-    }
-    
-    console.error("Failed to fetch data from GAS:", response.message);
-    
-    // Safety fallback: if getAllData fails, ensure we don't crash but mark as not fetched
-    if (this.cache.lastFetched === 0) {
-      this.cache = { ...this.cache, instructors: [], courses: [], catalog: [], testimonials: [], results: [], lastFetched: now };
-    }
-    return false;
+    return this.activeFetchPromise;
   }
 
   // Course catalog endpoints

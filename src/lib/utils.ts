@@ -58,15 +58,14 @@ export function isCourseLive(startDateStr: string, endDateStr?: string): boolean
   const start = parseDate(startDateStr);
   if (!start) return false;
 
-  const startMinus2Days = new Date(start);
-  startMinus2Days.setDate(startMinus2Days.getDate() - 2);
-  startMinus2Days.setHours(0, 0, 0, 0);
+  const startVal = new Date(start);
+  startVal.setHours(0, 0, 0, 0);
 
   const end = parseDate(endDateStr);
-  const endVal = end ? new Date(end) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days default fallback
+  const endVal = end ? new Date(end) : new Date(startVal.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days default fallback
   endVal.setHours(23, 59, 59, 999);
 
-  return now >= startMinus2Days && now <= endVal;
+  return now >= startVal && now <= endVal;
 }
 
 export function isCourseUpcoming(startDateStr: string): boolean {
@@ -76,9 +75,21 @@ export function isCourseUpcoming(startDateStr: string): boolean {
   const start = parseDate(startDateStr);
   if (!start) return false;
 
-  const startMinus2Days = new Date(start);
-  startMinus2Days.setDate(startMinus2Days.getDate() - 2);
-  startMinus2Days.setHours(0, 0, 0, 0);
+  const startVal = new Date(start);
+  startVal.setHours(0, 0, 0, 0);
 
-  return now < startMinus2Days;
+  return startVal >= now;
 }
+
+export function formatDate(dateStr: any): string {
+  if (!dateStr) return "";
+  const d = parseDate(dateStr);
+  if (!d) return String(dateStr);
+  
+  return d.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+

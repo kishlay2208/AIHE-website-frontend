@@ -53,15 +53,15 @@ const ResultsSection = () => {
       return;
     }
 
-    const selectedCourseName = courses.find(c => c.courseId === selectedCourseId)?.name || "";
+    const selectedCourseName = courses.find(c => String(c.courseId) === String(selectedCourseId))?.name || "";
 
     // Search logic (case-insensitive name comparison and normalized digit mobile comparison)
     const found = results.find(r => {
-      const isNameMatch = r.name.toLowerCase().trim() === name.toLowerCase().trim();
-      const isMobileMatch = r.mobile.replace(/\D/g, "") === cleanMobile;
+      const isNameMatch = String(r.name || "").toLowerCase().trim() === name.toLowerCase().trim();
+      const isMobileMatch = String(r.mobile || "").replace(/\D/g, "") === cleanMobile;
       const isCourseMatch =
-        r.courseId.toLowerCase().trim() === selectedCourseId.toLowerCase().trim() ||
-        r.courseName.toLowerCase().trim() === selectedCourseName.toLowerCase().trim();
+        String(r.courseId || "").toLowerCase().trim() === String(selectedCourseId || "").toLowerCase().trim() ||
+        String(r.courseName || "").toLowerCase().trim() === String(selectedCourseName || "").toLowerCase().trim();
       
       return isNameMatch && isMobileMatch && isCourseMatch;
     });
@@ -281,7 +281,7 @@ const ResultsSection = () => {
                         <div>
                           <span className="text-muted-foreground block mb-0.5">Status</span>
                           <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                            matchedResult.status.toLowerCase().includes("fail")
+                            String(matchedResult.status || "").toLowerCase().includes("fail")
                               ? "bg-red-100 text-red-700"
                               : "bg-green-100 text-green-700"
                           }`}>

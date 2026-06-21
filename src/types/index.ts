@@ -170,8 +170,10 @@ export interface Testimonial {
   id: string;
   name: string;
   place: string;
-  batchAndYear: string;
+  title: string;
+  photo?: string;
   comments: string;
+  batchAndYear?: string; // Optional fallback
 }
 
 export interface ResultRecord {
