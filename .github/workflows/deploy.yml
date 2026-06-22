@@ -23,6 +23,8 @@ jobs:
 
       - name: Build Project
         run: npm run build
+        env: 
+            VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
