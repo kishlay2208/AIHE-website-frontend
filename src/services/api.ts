@@ -40,7 +40,7 @@ class ApiClient {
 
   private async fetchFromGas<T>(action: string): Promise<ApiResponse<T>> {
     try {
-      const url = `${this.baseURL.trim()}?action=${action}`;
+      const url = `${(this.baseURL || "").trim()}?action=${action}`;
       const response = await axios.get(url);
       
       // Google Apps Script sometimes returns { data: [...] } and sometimes [...]
