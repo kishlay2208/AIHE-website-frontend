@@ -27,6 +27,7 @@ export interface Course {
   thumbnail?: string; // course thumbnail image overriding catalog
   // Transformed fields (joined from catalog)
   catalog?: CourseCatalog;
+  instructor?: Instructor;
 }
 
 

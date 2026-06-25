@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Globe, IndianRupee, Clock, CalendarDays, Timer, MapPin } from "lucide-react";
+import { Calendar, Globe, IndianRupee, Clock, CalendarDays, Timer, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
@@ -29,7 +29,7 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
         <img 
           src={thumbnail} 
           alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-out"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40" />
         <div className="absolute top-4 right-4">
@@ -41,19 +41,40 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
             {isRegistrationOpen ? "Registration Open" : "Coming Soon"}
           </div>
         </div>
-        <div className="absolute bottom-5 left-6 right-6">
-          <h3 className="font-serif text-xl md:text-2xl font-bold text-white mb-1 drop-shadow-md">
+        <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-6 sm:right-6">
+          <h3 className="font-serif text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 drop-shadow-md">
             {title}
           </h3>
         </div>
       </div>
 
-      <div className="p-8 flex flex-col flex-grow">
+      <div className="p-5 sm:p-8 flex flex-col flex-grow">
         <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2 italic">
           {description}
         </p>
 
-        <div className="grid grid-cols-2 gap-4 mb-8 bg-secondary/20 p-5 rounded-2xl border border-primary/5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 bg-secondary/20 p-4 sm:p-5 rounded-2xl border border-primary/5">
+          {/* Instructor */}
+          <div className="flex items-center gap-3 col-span-1 sm:col-span-2 border-b border-primary/10 pb-3 mb-1">
+            <div className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center shrink-0 overflow-hidden border-2 border-primary/10">
+              {course.instructor?.image ? (
+                <img 
+                  src={course.instructor.image} 
+                  alt={course.instructor.name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-5 h-5 text-primary/70" />
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">Instructor</span>
+              <span className="text-xs font-bold text-primary leading-tight truncate">
+                {course.instructor?.name || "TBA"}
+              </span>
+            </div>
+          </div>
+
           {/* Schedule */}
           <div className="flex items-start gap-2">
             <div className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 mt-0.5">
@@ -134,7 +155,7 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between pt-6 border-t border-primary/5">
+        <div className="mt-auto flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between pt-6 border-t border-primary/5">
           <div className="flex flex-col">
             <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Course Fee</span>
             <div className="flex items-baseline gap-0.5 text-primary">
@@ -148,7 +169,7 @@ const CourseCard = ({ course, index, onRegister }: CourseCardProps) => {
             size="lg"
             onClick={() => onRegister(course)}
             disabled={!isRegistrationOpen}
-            className={`rounded-2xl px-8 font-bold transition-all duration-300 ${
+            className={`w-full sm:w-auto rounded-2xl px-6 sm:px-8 font-bold transition-all duration-300 ${
               isRegistrationOpen 
                 ? "bg-primary hover:bg-black hover:scale-105 shadow-lg hover:shadow-primary/20"
                 : "opacity-60 cursor-not-allowed bg-secondary text-muted-foreground"
