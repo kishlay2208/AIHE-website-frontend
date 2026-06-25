@@ -189,17 +189,20 @@ class ApiClient {
 
   // Course (Batch) endpoints
   async getCourses(): Promise<ApiResponse<Course[]>> {
-    if (!this.cache.courses || !this.cache.catalog) {
+    if (!this.cache.courses || !this.cache.catalog || !this.cache.instructors) {
       await this.getAllData();
     }
 
     const catalogMap = new Map(this.cache.catalog?.map(c => [c.courseId, c]) || []);
+    const instructorMap = new Map(this.cache.instructors?.map(i => [Number(i.id), i]) || []);
     
     const mappedData = (this.cache.courses || []).map(batch => {
       const catalog = catalogMap.get(batch.courseId);
+      const instructor = instructorMap.get(Number(batch.instructorId));
       return {
         ...batch,
         catalog: catalog,
+        instructor: instructor,
       };
     });
 
